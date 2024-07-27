@@ -62,10 +62,10 @@ Route::get('paypalPayment/{plan}/{price}/{id}/{phone}',[paypalController::class,
 Route::get('paypalSuccess', [paypalController::class,'paypalSuccess'])->name('paypalSuccess');
 Route::get('paypalCancel', [paypalController::class,'paypalCancel'])->name('paypalCancel');
 
-/*Route::get('do',function(){
+Route::get('do',function(){
   $a='cancel';
   echo $a.'<br>';
  $crypt= Crypt::encrypt($a);
   echo $crypt.'<br>';
 
-});*/
+});

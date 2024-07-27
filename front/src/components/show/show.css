@@ -38,7 +38,7 @@ body{
 	direction: ltr;
   }
 .featured-icons-div a{
-	width: calc(60% / 5);
+	margin-right: 3vw;
     font-size: 1.7vw;
 }
 .full-tel{color:#81eee0;}

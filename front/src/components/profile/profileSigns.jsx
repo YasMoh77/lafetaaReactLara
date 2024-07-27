@@ -214,7 +214,8 @@ const ProfileSigns = () => {
         const title = refTitle.current.value.trim();
         const id = parseInt(refId.current.value, 10);
         const file = refFile.current.files[0];
-      
+        console.log(file)
+
           //check if form values are valid
           showError(title,'',refTitle);
           showErrorTitle(title,refTitle);
