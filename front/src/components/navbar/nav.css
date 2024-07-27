@@ -1,0 +1,24 @@
+/***navbar */
+.navbar{
+	height: 15vh;
+	background: var(--mainColor) !important;
+}
+.navbar-brand{
+	color: white;
+    font-size: 2.5vw;
+    font-weight: bold;
+    font-family: system-ui;
+}
+.navbar-nav{
+    margin: auto;
+}
+.navbar-nav li{
+	margin: 0 2vw;
+  }
+.navbar-nav .nav-link,.navbar-nav .nav-link.active{
+	color:white;
+	font-weight: bold;
+  }
+.navbar-nav .nav-link.active{
+	 border-bottom: white solid;
+  }

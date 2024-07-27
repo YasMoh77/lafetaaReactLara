@@ -1,0 +1,18 @@
+.top-add{
+    min-height: 90vh;
+}
+.form-add{
+    background-color: aqua;
+    margin: 10vh auto 15vh !important;
+    padding: 10vh 2vw ;
+    width: 60%;
+}
+.form-add .input-cont{
+    padding-left: 4vw;
+}
+.input-cont label{
+    flex: 1.5;
+}
+.input-cont input,.input-cont select{
+    flex: 4;
+}

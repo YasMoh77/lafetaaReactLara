@@ -1,0 +1,35 @@
+.prof-head a{
+   color: white;
+}
+.profData-div{
+    min-height: 15vh;
+}
+.logout-a{
+    cursor: pointer;
+}
+.main-prof{
+    margin-bottom: 10vh;
+}
+/*edit in profile*/
+.head-edit{
+    background-color: #0a9e59;
+}
+.edit-form{
+    min-width: 55%;
+    background: white;
+    overflow-y: auto;
+    max-height: calc(100vh - 80px);
+}
+::-webkit-scrollbar{ 
+    border-radius: 1vw;
+}
+.edit-overlay{
+    overflow-y: auto;
+    height: calc(100% - 30px);
+    top: 35px;
+}
+/** making ad pro(tameez) */
+.head-pro{
+    background-color: #e426a5;
+}
+

@@ -1,0 +1,32 @@
+/**footer */
+footer{
+	background: #1c3b92;
+	color: white;
+	height:60vh;
+}
+footer div:first-child{
+    font-size:1.7vw;
+}
+footer .row, footer .col, footer .card{
+	background: #1c3b92;
+	color: white;
+}
+footer .card{
+	border: none;
+}
+footer .row{
+	margin: 0;
+}
+.card-body a{
+	display: block;
+	margin-bottom: 5vh;
+    text-decoration: none;
+	color: white;
+}
+.card-body a:hover{
+    text-decoration: underline;
+}
+.bottom{
+	height: 10vh;
+	color: white;
+}
