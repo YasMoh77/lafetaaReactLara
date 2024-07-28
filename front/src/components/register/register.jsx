@@ -127,7 +127,10 @@ const Register = () => {
 
                 <div className='register-submit d-flex justify-content-between  mt-4 '>
                    <button type="submit" className="btn btn-success mx-auto ">أرسل</button>
-                   <Link to='/login'  className=" mx-auto "> لديك حساب؟ تسجيل الدخول</Link>
+                   <div className=" mx-auto ">
+                     <span className='d-block'>لديك حساب؟</span>
+                     <Link to='/login'> تسجيل الدخول</Link>
+                   </div>
                 </div>
                
                 {/* use spinner before fetching response*/}

@@ -111,7 +111,7 @@ return [
     'multiple_of' => 'The :attribute field must be a multiple of :value.',
     'not_in' => 'The selected :attribute is invalid.',
     'not_regex' => 'The :attribute field format is invalid.',
-    'numeric' => ' :attribute  يجب إدخال رقم في حقل ',
+    'numeric' => ' يجب إدخال أرقام في هذا الحقل ',
     'password' => [
         'letters' => 'The :attribute field must contain at least one letter.',
         'mixed' => 'The :attribute field must contain at least one uppercase and one lowercase letter.',
@@ -147,7 +147,7 @@ return [
     'unique' => 'هذه البيانات مسجلة لدينا بالفعل',
     'uploaded' => 'The :attribute failed to upload.',
     'uppercase' => 'The :attribute field must be uppercase.',
-    'url' => 'الرابط الذي أدخلته غير صحيح',//The :attribute field must be a valid URL.
+    'url' => 'الرابط  يجب ان يبدأ بـ http://www. أو https://www. ',//The :attribute field must be a valid URL.
     'ulid' => 'The :attribute field must be a valid ULID.',
     'uuid' => 'The :attribute field must be a valid UUID.',
 

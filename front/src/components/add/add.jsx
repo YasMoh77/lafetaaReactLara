@@ -15,7 +15,7 @@ const Add = () => {
     const [loadingAdd, setLoadingAdd] = useState(false)
     //navigate
     const navigate=useNavigate();
-    //for form
+    // form values
     const title = useRef('')
     const refSmall = useRef('')
     const country = useRef('')
@@ -24,6 +24,12 @@ const Add = () => {
     const cat = useRef('')
     const sub = useRef('')
     const photo = useRef('')
+    //additional values
+    const refPhone = useRef('')
+    const refWhats = useRef('')
+    const refEmail = useRef('')
+    const refWeb = useRef('')
+    const refYoutube = useRef('')
 
     //get cat and country on page load
     useEffect(() => {
@@ -82,7 +88,7 @@ const Add = () => {
 
         //get values from form
         const loginData=JSON.parse(localStorage.getItem('loginData'));
-        const email= loginData && loginData.email;
+        const email= loginData && loginData.email;//means user already signed in
         const titleValue=title.current.value.trim();
         const countryValue=parseInt(country.current.value,10);
         const stateValue=parseInt(state.current.value,10);
@@ -90,6 +96,15 @@ const Add = () => {
         const catValue=parseInt(cat.current.value,10);
         const subValue=parseInt(sub.current.value,10);
         const photoValue=photo.current.files[0];
+
+        //additional values
+        const phone=parseInt(refPhone.current.value,10);
+        const whats=parseInt(refWhats.current.value,10);
+        const web=refWeb.current.value;
+        const emailSocial=refEmail.current.value;
+        const youtube=refYoutube.current.value;
+    // console.log(phone,whats,web,emailSocial,youtube)
+
         
         //check if form values are valid
         showError(titleValue,'',title);
@@ -102,7 +117,7 @@ const Add = () => {
         showError(photoValue,null,photo);
 
         //store values
-        const postData={titleValue,catValue,subValue,countryValue,stateValue,cityValue,photoValue,email}
+        const postData={titleValue,catValue,subValue,countryValue,stateValue,cityValue,photoValue,email,phone,whats,web,emailSocial,youtube}
        
         //send values to backend
         if(titleValue && titleValue.length>=5 && titleValue.length<=40  && catValue>0 && subValue>0 && countryValue>0 && stateValue>0 && cityValue>0 && photoValue!=null ){
@@ -121,7 +136,9 @@ const Add = () => {
 
                 setResponseOk(res.data.msg)
                 setLoadingAdd(false)
-                navigate('/');
+                setTimeout(() => {
+                   navigate('/');
+                }, 3000);
             }catch (error) {
                 setLoadingAdd(false)
                 error.response ? setResponseError(error.response.data.errors) :setResponseError('');
@@ -199,16 +216,47 @@ const Add = () => {
 
                 <div className="input-cont mb-3 d-flex ">
                     <label htmlFor="photo" className="form-label">أضف صورة</label>
-                    <input type="file"  ref={photo} className="form-control"  />
+                    <input type="file" id='photo' ref={photo} className="form-control"  />
                 </div>
 
-                <button type="submit" className="btn btn-primary mx-auto w-fit d-block">أرسل</button>
+               
+               <div className='social-div py-4 my-5 ps-2 rounded-2'>
+                    <p className='w-fit mx-auto fs-4 fw-bold'>حقول اختيارية</p>
+
+                    <div className="input-cont mb-3 d-flex ">
+                        <label htmlFor="phone" className="form-label">تليفون محمول </label>
+                        <input type="text" id='phone' ref={refPhone}  className="form-control"  />
+                    </div>
+
+                    <div className="input-cont mb-3 d-flex ">
+                        <label htmlFor="whats" className="form-label"> واتس اب </label>
+                        <input type="text" id='whats' ref={refWhats} className="form-control"  />
+                    </div>
+
+                    <div className="input-cont mb-3 d-flex ">
+                        <label htmlFor="web" className="form-label">موقع الكتروني </label>
+                        <input type="text" id='web' ref={refWeb} className="form-control"  />
+                    </div>
+
+                    <div className="input-cont mb-3 d-flex ">
+                        <label htmlFor="email" className="form-label">بريد الكتروني </label>
+                        <input type="text" id='email' ref={refEmail} className="form-control"  />
+                    </div>
+
+                    <div className="input-cont mb-3 d-flex ">
+                        <label htmlFor="youtube" className="form-label">قناة يوتيوب  </label>
+                        <input type="text" id='youtube' ref={refYoutube} className="form-control"  />
+                    </div>
+                </div>
+
+
+                <button type="submit" className="btn btn-primary mx-auto w-25 d-block">أرسل</button>
                 {loadingAdd && (<p className='w-fit mt-2 mx-auto'><span className='spinner-border gray '></span></p>)}
                 {responseOk && (<p className="w-fit mx-auto mt-4 fw-bold">{responseOk}</p>) }              
                {responseError && Object.keys(responseError).map((key)=>(
                    <div className='mt-3 '>
                        {responseError[key].map((e)=>(
-                           <p className='mb-0 mx-auto w-fit red'>{e}</p>
+                          key=='phone' ? <p className='mb-0 mx-auto w-fit red'>'تليفون محمول' : {e}</p>: key=='youtube'?<p className='mb-0 mx-auto w-fit red'>'قناة يوتيوب' : {e}</p>:key=='web'?<p className='mb-0 mx-auto w-fit red'>'موقع الكتروني' : {e}</p> :key=='whats'?<p className='mb-0 mx-auto w-fit red'>'واتس اب' : {e}</p>:<p className='mb-0 mx-auto w-fit red'>' بريد الكتروني' : {e}</p>
                        ))}
                    </div>
                ))  }

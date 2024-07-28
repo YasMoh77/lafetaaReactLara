@@ -41,7 +41,7 @@ class apiController extends Controller
 
 
     //respond to user request and send him verification email again 
-    public function sendVerify(Request $request)
+    public function sendVerify(Request $request) 
     {
       $user['name']=$request->nameRegister;
       $user['email']=$request->emailRegister;

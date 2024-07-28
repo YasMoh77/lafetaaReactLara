@@ -37,9 +37,11 @@ const ProfileSigns = () => {
     const refSmall = useRef('')
     const refFile = useRef('')
     const refId = useRef('')
+    const refEditFeature = useRef(0)
     const [loadForm, setLoadForm] = useState(false)
     const [responseError, setResponseError] = useState('')
     const [responseOk, setResponseOk] = useState('')
+    const [editFeature, setEditFeature] = useState('')
 
     //for making ads pro (tameez)
     const [imgRocketId, setImgRocketId] = useState('')
@@ -65,6 +67,7 @@ const ProfileSigns = () => {
         const postData={email,currentPage};
         const res= await http.post(`/ads/user`,postData);
         setData(res.data.ads)
+        
         setAdsNum(res.data.adsNum)
         setPageTotal(res.data.div)
         //end loading spinner after fetching data
@@ -107,14 +110,15 @@ const ProfileSigns = () => {
     }
   
      //edit ads
-    const editAd=(id,NAME,src)=>{
+    const editAd=(id,NAME,src,feature)=>{
        setImgId(id)
        setImgName(NAME)
        setImgSrc(src)
+      //feature==2 ? setEditFeature(feature) : setEditFeature('');
+      // console.log(editFeature)
        document.querySelector('body').style.overflow='hidden';
     }
     const stopEditAd=()=>{
-       // console.log(id)
         setImgId('')
         document.querySelector('body').style.overflow='initial';
      }
@@ -122,7 +126,6 @@ const ProfileSigns = () => {
     
      //start tameezAd (for making ads pro)
      const tameezAd=(id,NAME,src,feature)=>{
-         console.log(feature)
         setTameezFeature(feature)
         setImgRocketId(id)
         setImgName(NAME)
@@ -214,7 +217,6 @@ const ProfileSigns = () => {
         const title = refTitle.current.value.trim();
         const id = parseInt(refId.current.value, 10);
         const file = refFile.current.files[0];
-        console.log(file)
 
           //check if form values are valid
           showError(title,'',refTitle);
@@ -243,7 +245,6 @@ const ProfileSigns = () => {
             setLoadForm(false);
             const mes=res.data.message;
             setResponseOk(mes)
-           // console.log(res.data.message)
             //close overlay and reload
             setTimeout(() => {
               stopEditAd();
@@ -291,6 +292,9 @@ const ProfileSigns = () => {
                      <input type='file' className='d-block mb-5' ref={refFile} />
 
                      <input type='hidden'  ref={refId} value={imgId} />
+                     <input type='hidden'  ref={refEditFeature} value={editFeature} />
+                     
+
                       {loadForm ? <button  className='btn btn-info w-25 mx-auto d-block'><span className='spinner-border gray d-block m-auto'></span></button> : <button className='btn btn-info w-25 mx-auto d-block'>أرسل</button> }
                      
                       {/* show form error */}
@@ -382,24 +386,32 @@ const ProfileSigns = () => {
                    <p>{adsNum}</p>
                    <div id="show2"  className="d-flex flex-wrap show-wrapper justify-content-space-between ">
                     {
-                        loading ? (<p className='spinner-border gray mx-auto'></p>) : data && data.length>0 ? data.map((e, index)=>(
-                            <div key={e.item_id} className='col-xs-12 col-md-6 col-lg-4 main2 main-prof'>
+                        loading ? (<p className='spinner-border gray mx-auto'></p>) : data && data.length>0 && data.map((e, index)=>(
+                            <div key={e.item_id} className='col-xs-12 col-md-6 col-lg-4 main3 main-prof'>
                                 <img onClick={(e)=>{enlargeFun(e.target.src)}} id={e.item_id}  key={index} name={e.feature} src={baseURLImg+e.photo} alt={e.NAME} className='w-100 h-75 mx-auto d-block img'/> 
                                      {/*<ShowCat catId={e.CAT_ID} />
                                       <ShowSubcat subId={e.subcat_id} />*/}
-                                <p>{e.NAME}</p>
-                                <div key={e.item_id} className='d-flex justify-content-around'>
+                                <div className='pe-1 my-1'>{e.NAME}</div>                                            
+                                <div className='featured-icons-div d-flex px-1'>
+                                    {e.phone != null ? <a href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 
+                                    {e.whatsapp !=null ? <a href={'https://wa.me/'+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a><i class="bi bi-whatsapp empty"></i></a> } 
+                                    {e.website !=null ? <a href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a><i class="bi bi-globe-americas empty"></i></a>} 
+                                    {e.item_email !=null ? <a href='mailto:hgq1100@yahoo.com'><i class="bi bi-envelope-at-fill full-env"></i></a> : <a><i class="bi bi-envelope-at-fill empty"></i></a> } 
+                                    {e.youtube !=null ? <a href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a><i class="bi bi-youtube empty"></i></a> } 
+                                </div>
+                                            
+                                <div key={e.item_id} className='d-flex justify-content-around mt-2'>
                                         {/* edit ad*/}
-                                      <i title='تحرير' onClick={(e)=>{editAd(e.target.parentElement.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.src)}} className='bi bi-wrench'></i>
+                                      <i title='تحرير' onClick={(e)=>{editAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.previousSibling.previousSibling.previousSibling.name)}} className='bi bi-wrench'></i>
                                         {/* promote and display according to plan*/}
                                       {e.feature==2 && <i title='باقة ذهبية'    className="bi bi-rocket-takeoff-fill green"></i>}
-                                      {e.feature==1 && <i title='باقة فضية'  onClick={(e)=>{ tameezAd(e.target.parentElement.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.src,e.target.parentElement.previousSibling.previousSibling.name)  }}  className="bi bi-rocket-takeoff-fill yellow"></i>}
-                                      {e.feature==0 && <i title='تمييز'  onClick={(e)=>{ tameezAd(e.target.parentElement.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.src,e.target.parentElement.previousSibling.previousSibling.name)  }}  className="bi bi-rocket-takeoff"></i>}
+                                      {e.feature==1 && <i title='باقة فضية'  onClick={(e)=>{ tameezAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.previousSibling.previousSibling.previousSibling.name)  }}  className="bi bi-rocket-takeoff-fill yellow"></i>}
+                                      {e.feature==0 && <i title='تمييز'  onClick={(e)=>{ tameezAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.previousSibling.previousSibling.previousSibling.name)  }}  className="bi bi-rocket-takeoff"></i>}
                                         {/* delete ad*/}
                                       <i title='حذف' className='bi bi-trash'></i>
                                 </div>
                             </div>
-                        )) : (<p> لا توجد لافتات مضافة بواسطة هذا العضو </p>)
+                        )) 
                     }
                    </div>
                    {data && data.length>0 ?  pageTotal && currentPage<pageTotal ? (<button ref={refBtnMore} onClick={loadMore} className="btn btn-info w-25 mx-auto d-block" id="loadMore">   {loadingMore ? (<span className="spinner-border spinner" role="status" aria-hidden="true"></span>) : (<span>Load more</span>)} </button>) : (<p className="mx-auto w-fit red">نهاية النتائج</p>) : (<span></span>)}

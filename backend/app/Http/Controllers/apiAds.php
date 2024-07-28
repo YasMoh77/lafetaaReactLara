@@ -7,6 +7,7 @@ use App\Models\Ad;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\subCategory;
+use App\Rules\countryPhone;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage; //put or delete files
 use Illuminate\Support\Facades\Log;
@@ -109,7 +110,8 @@ class apiAds extends Controller
     
     //  Store  newly created ads
     public function store(Request $request)
-    {
+    {  
+       // $request->phone=trim($request->phone);
         $validated=$request->validate([
             'titleValue' => ['required','string','min:5','max:40'],
             'catValue' => 'required|integer|not_in:0',
@@ -117,9 +119,16 @@ class apiAds extends Controller
             'countryValue' => 'required|integer|not_in:0',
             'stateValue' => 'required|integer|not_in:0',
             'cityValue' => 'required|integer|not_in:0',
-            'photoValue'=>'required|image|mimes:jpg,jpeg,png|max:500|min:1'
+            'photoValue'=>'required|image|mimes:jpg,jpeg,png|max:500|min:1',
+            //optional 
+            'phone'=> ['nullable', 'numeric'  ],//
+            'whats'=>'nullable|numeric',
+            'web'=>'nullable|url:http,https',
+            'emailSocial'=>'nullable|email',
+            'youtube'=>'nullable|url:http,https',          
             
         ]);
+        
 
         if(!$validated){
             return response()->json(['msg'=>'not validated ']);
@@ -138,24 +147,28 @@ class apiAds extends Controller
         $admin=User::where('id',$USERID)->value('admin');
         $approve=$admin=='ok'?1:0;
 
+        $added=new Ad();
+        $added->NAME=strip_tags($request->input('titleValue'));
+        $added->CAT_ID= $request->catValue;
+        $added->subcat_id= $request->subValue;
+        $added->country_id= $request->countryValue;
+        $added->state_id= $request->stateValue;
+        $added->city_id= $request->cityValue;
+        $added->photo= $newPhoto;
+        $added->USER_ID= $USERID;
+        $added->approve= $approve;
+        //optional
+        $added->phone= strip_tags($request->input('phone'));
+        $added->website= strip_tags($request->input('web'));
+        $added->item_email= strip_tags($request->input('emailSocial'));  
+        $added->whatsapp= strip_tags($request->input('whats'));
+        $added->youtube= strip_tags($request->input('youtube'));
 
-        $added= Ad::create([
-            'NAME'=> strip_tags($request->input('titleValue')),
-            'CAT_ID'=> $request->catValue,
-            'subcat_id'=> $request->subValue,
-            'country_id'=> $request->countryValue,
-            'state_id'=> $request->stateValue,
-            'city_id'=> $request->cityValue,
-            'photo'=> $newPhoto,
-            'USER_ID'=> $USERID,
-            'approve'=>$approve
-
-         ]);
+        $added->save();
          
-        if($validated){
+        if($added){
             return response()->json(['msg'=> 'تمت الاضافة بنجاح']);
          }
-
 
          
     }

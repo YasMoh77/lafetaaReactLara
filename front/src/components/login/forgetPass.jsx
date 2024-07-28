@@ -9,7 +9,6 @@ import './login.css'
 const Forgetpassword = () => {
     const loginData = JSON.parse(localStorage.getItem('loginData'));
     const emailReset = localStorage.getItem('emailReset');
- 
 
      //values
      const [responseOk, setResponseOk] = useState()
@@ -88,19 +87,19 @@ const Forgetpassword = () => {
 
     return (
         <div className='container-fluid top-add'>
-            <form onSubmit={submitResetPass} className='w-50 mx-auto my-5 ps-5 form-add rounded-3'>
+            <form onSubmit={submitResetPass} className='w-50 mx-auto my-5 ps-2 form-add-forget rounded-3'>
                 <p className="w-fit mx-auto fw-bold fs-2"> تعديل كلمة المرور </p>
                 
                 <div className="mb-3 d-flex pass-div">
-                    <label htmlFor="password" className="form-label"> كلمة المرور الجديدة</label>
-                    <input type="password"  ref={refPassword} className="form-control"  id="password" placeholder="أدخل كلمة المرور" required/>
+                    <label htmlFor="password" className="form-label lbl-forget"> كلمة المرور الجديدة</label>
+                    <input type="password"  ref={refPassword} className="form-control inp-forget"  id="password" placeholder="أدخل كلمة المرور" required/>
                     <i onClick={showHidePassword} className='bi bi-eye'></i>
                 </div>
 
 
                 <div className="mb-3 d-flex pass-div">
-                    <label htmlFor="password2" className="form-label">تأكيد  كلمة المرور الجديدة</label>
-                    <input type="password"  ref={refPassword2} className="form-control"  id="password2"  placeholder="أعد كلمة المرور" required/>
+                    <label htmlFor="password2" className="form-label lbl-forget">تأكيد  كلمة المرور الجديدة</label>
+                    <input type="password"  ref={refPassword2} className="form-control inp-forget"  id="password2"  placeholder="أعد كلمة المرور" required/>
                     <i onClick={showHidePassword2} className='bi bi-eye'></i>
                 </div>
 

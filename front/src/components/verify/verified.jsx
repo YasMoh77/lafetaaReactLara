@@ -18,22 +18,6 @@ const Verified = () => {
    const [show, setShow] = useState(false)
    const navigate=useNavigate();
 
- /* //if logged in, go to profile. if not verified, go to verify
-  useEffect(() => {
-    if(loginData){ navigate('/profile');}
-    if(nameRegister && emailRegister){navigate('/verify');}
-  }, [navigate])
-
-    const justVerified= localStorage.getItem('justVerified')
-
-   
-    if(!justVerified && !nameRegister && !emailRegister){navigate('/');}
-    if(justVerified ){
-      setShow(true)
-      setTimeout(() => {
-         navigate('/login'); 
-      }, 3000);
-    }*/
     useEffect(() => {
         if(loginData){ navigate('/profile');}
         checkVerifiedFunc()

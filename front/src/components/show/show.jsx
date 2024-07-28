@@ -106,7 +106,7 @@ async function getStates(cont){
    // prepare data to be sent
     const postData={cont};
     //fetch states
-    console.log(cont)
+    
     try{
    const res=  await http.post('http://127.0.0.1:8000/api/states',postData,{
      withCredentials: true,  // Include credentials in the request
@@ -206,6 +206,14 @@ async function getCities(state){
                                             {result&&result.length>0 ?  result.map((e,index)=>(
                                                 <div className='col-xs-12 col-md-6 col-lg-4 main2'>
                                                     <img onClick={(e)=>{enlargeFun(e.target.src)}} key={index} src={baseURL+e.photo} alt={e.NAME} className='w-100 h-100 mx-auto d-block img'/> 
+                                                    <div className='pe-1 mb-2'>{e.NAME}</div>                                            
+                                                    <div className='featured-icons-div d-flex px-1'>
+                                                    {e.phone != null ? <a href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 
+                                                    {e.whatsapp !=null ? <a href={'https://wa.me/'+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a><i class="bi bi-whatsapp empty"></i></a> } 
+                                                    {e.website !=null ? <a href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a><i class="bi bi-globe-americas empty"></i></a>} 
+                                                    {e.item_email !=null ? <a href='mailto:hgq1100@yahoo.com'><i class="bi bi-envelope-at-fill full-env"></i></a> : <a><i class="bi bi-envelope-at-fill empty"></i></a> } 
+                                                    {e.youtube !=null ? <a href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a><i class="bi bi-youtube empty"></i></a> } 
+                                                    </div>
                                             </div>
                                              ))   : (<p className="mx-auto"> {msg} </p>) 
                                             }

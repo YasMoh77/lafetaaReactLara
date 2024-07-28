@@ -25,7 +25,8 @@ const Login = () => {
     const refPassword = useRef('')
 
    /* async function getUser(){
-      const main= await axios.get('http://127.0.0.1:8000/sanctum/csrf-cookie');
+      const main= await axios.get('/sanctum/csrf-cookie');
+      console.log(main)
     }
     useEffect(() => {
        getUser();
@@ -34,9 +35,14 @@ const Login = () => {
     //log user in
     const submitCheckUser=async(e)=>{
         e.preventDefault();
+
+        //if responseOk has message, remove it
+        setResponseOk('');
+
         //get values from form
         const email=refEmail.current.value.trim();
         const password=refPassword.current.value.trim();
+
         //show form error
         const showError=(field,value,ref)=>{
         if(field===value){ref.current.style.backgroundColor='#e87878';}else{ref.current.style.backgroundColor='white';}
@@ -45,6 +51,7 @@ const Login = () => {
         //check if form values are valid
         showError(email,'',refEmail);
         showError(password,'',refPassword);
+
         //store values
         const postData={email,password}
         
@@ -88,6 +95,9 @@ const Login = () => {
                       }, 2500);
                       window.location.reload();
                   }
+               }else{
+                setResponseOk(res.data.message);
+                setLoadNav(false)
                }
         }//end if
     }//end submitAddFunc
@@ -114,7 +124,7 @@ const Login = () => {
 
     return (
         <div className='container-fluid top-add'>
-            <form onSubmit={submitCheckUser} className='w-50 mx-auto my-5 form-add b-radius-1'>
+            <form onSubmit={submitCheckUser} className='mx-auto my-5 form-add b-radius-1'>
                 <p className="w-fit mx-auto fw-bold fs-2">تسجيل الدخول </p>
                 
                 <div className="mb-3 d-flex ">

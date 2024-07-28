@@ -17,7 +17,7 @@ const SuccessPayExternal = () => {
     return (
         <div className='container-fluid top-add'>
             <div className='w-fit mx-auto my-5 p-2'>
-                <p className='mx-auto w-fit green'>نم تمييز اللافتة بنجاح</p>
+                <p className='mx-auto w-fit green'>تم تمييز اللافتة بنجاح</p>
                 <button className='border-0 bg-info py-2 px-3 '><Link to='/' className='white'>اذهب للصفحة الرئيسية</Link></button>
             </div>
         </div>

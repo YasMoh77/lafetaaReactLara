@@ -22,18 +22,19 @@ body{
 	justify-content: space-between;
 	padding: 0;
 }
-.main,.main2{
+.main,.main2,.main3{
 	border: 1px solid lightgray;
 	margin-bottom: 5vh;
-	height: 65vh;
-	/*min-height: 65vh;*/
 }
-.main{
-	height: 80vh;
-}
-.main img{
-	height: 85%;
-}
+.main{height: 85vh;}
+.main img{height: 84%;}
+
+.main2{height: 65vh;}
+.main2 img{height: 85%;}
+
+.main3{height: 80vh;}
+.main3 img{height: 85%;}
+
 .featured-icons-div{
 	direction: ltr;
   }
