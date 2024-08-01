@@ -164,6 +164,13 @@ class apiController extends Controller
        }
     }
 
+   
+    //get latest ads
+    public function latest()
+    {
+       $latest= Ad::orderBy('item_id','DESC')->limit(9)->get();
+       return json_encode($latest);
+    }
 
 
     //choose package

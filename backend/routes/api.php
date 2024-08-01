@@ -12,7 +12,10 @@ use Illuminate\Support\Facades\Crypt;
 
 //show and search 
 Route::group([],function () {
-    Route::get('home/{key}',[apiController::class,'paidAds']);  
+   //get featured ads
+    Route::get('home/{key}',[apiController::class,'paidAds']); 
+    //add latest ads
+    Route::get('/latest',[apiController::class,'latest']); 
     Route::post('search',[apiController::class,'search']); 
     //countries, states and cities
     Route::get('conts',[apiController::class,'conts']);  
@@ -51,8 +54,6 @@ Route::group([],function () {
 
  //ads
  Route::group(['prefix'=>'ads'],function(){
-    //add new ads
-    Route::get('/',[apiAds::class,'index']);
     //get certain user ads
     Route::post('/user',[apiAds::class,'userAds']);
     Route::post('store',[apiAds::class,'store']); 

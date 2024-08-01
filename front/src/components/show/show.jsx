@@ -15,6 +15,8 @@ function Show() {
     
     //bringLinks 
     const [ads, setAds] = useState([])
+    //latest ads
+    const [adsLatest, setAdsLatest] = useState([])
 
     //search
     const [state, setState] = useState([])
@@ -35,17 +37,27 @@ function Show() {
     const [enlarge, setEnlarge] = useState('')
     const baseURL='http://127.0.0.1:8000/storage/images/';
     
-     //get the first 12 items on homepage when page loads
-const bringLinks=async()=>{
+     //get featured ads on homepage when page loads
+   const bringLinks=async()=>{
 	setLoading(true);//start loading spinner	
 	const res= await http.get('http://127.0.0.1:8000/api/home/123');//fetch data
     setAds(res.data);//store data in ads
     setLoading(false);//end loading spinner
-}
+  }
+
+  //get newest ads on homepage when page loads
+  const bringLatest=async()=>{
+    setLoading(true);//start loading spinner	
+	const res= await http.get('http://127.0.0.1:8000/api/latest');//fetch data
+    console.log(res.data)
+    setAdsLatest(res.data);//store data in ads
+    setLoading(false);//end loading spinner
+
+  }
 
 useEffect(() => {
     bringLinks();
-   // getStates();
+    bringLatest();
 }, []) 
 
 
@@ -150,6 +162,29 @@ async function getCities(state){
                                     <div className="row">
                                         <div id="show"  className="d-flex flex-wrap show-wrapper justify-content-between col-sm-12">
                                         { ads.map((e,index)=>(<div className='col-xs-12 col-md-4 main'>
+                                            <img  onClick={(e)=>{enlargeFun(e.target.src)}} key={index} src={baseURL+e.photo} alt={e.NAME} className='w-100 mx-auto d-block img'/> 
+                                            <div className='pe-1 mb-1'>{e.NAME}</div>                                            
+                                            <div className='featured-icons-div d-flex px-1 justify-content-between'>
+                                               <div>
+                                                    {e.phone != null ? <a href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 
+                                                    {e.whatsapp !=null ? <a href={'https://wa.me/'+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a><i class="bi bi-whatsapp empty"></i></a> } 
+                                                    {e.website !=null ? <a href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a><i class="bi bi-globe-americas empty"></i></a>} 
+                                                    {e.item_email !=null ? <a href='mailto:hgq1100@yahoo.com'><i class="bi bi-envelope-at-fill full-env"></i></a> : <a><i class="bi bi-envelope-at-fill empty"></i></a> } 
+                                                    {e.youtube !=null ? <a href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a><i class="bi bi-youtube empty"></i></a> } 
+                                               </div>
+                                               {loginData ?  <ShowSaved id={e.item_id} /> : <Link to='/login'><i className='bi bi-heart align-self-center'></i></Link> }
+                                            </div>
+                                        </div> )) }
+                                        </div>
+                                    </div>	
+                                </div>
+
+                                {/** after loading hide spinner and show ads */}
+                                <div  className="container-fluid mt-5">
+                                    <p className="paid"> أحدث اللافتات </p>
+                                    <div className="row">
+                                        <div id="show"  className="d-flex flex-wrap show-wrapper justify-content-between col-sm-12">
+                                        { adsLatest.map((e,index)=>(<div className='col-xs-12 col-md-4 main2'>
                                             <img  onClick={(e)=>{enlargeFun(e.target.src)}} key={index} src={baseURL+e.photo} alt={e.NAME} className='w-100 mx-auto d-block img'/> 
                                             <div className='pe-1 mb-1'>{e.NAME}</div>                                            
                                             <div className='featured-icons-div d-flex px-1 justify-content-between'>
