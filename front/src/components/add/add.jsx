@@ -223,29 +223,29 @@ const Add = () => {
                <div className='social-div py-4 my-5 ps-2 rounded-2'>
                     <p className='w-fit mx-auto fs-4 fw-bold'>حقول اختيارية</p>
 
-                    <div className="input-cont mb-3 d-flex ">
+                    <div className="input-cont mb-3 d-flex pe-2">
                         <label htmlFor="phone" className="form-label">تليفون محمول </label>
                         <input type="text" id='phone' ref={refPhone}  className="form-control"  />
                     </div>
 
-                    <div className="input-cont mb-3 d-flex ">
+                    <div className="input-cont mb-3 d-flex pe-2">
                         <label htmlFor="whats" className="form-label"> واتس اب </label>
-                        <input type="text" id='whats' ref={refWhats} className="form-control"  />
+                        <input type="text" id='whats' ref={refWhats} className="form-control" placeholder=' الرقم بالاضافة لرمز الدولة' />
                     </div>
 
-                    <div className="input-cont mb-3 d-flex ">
+                    <div className="input-cont mb-3 d-flex pe-2">
                         <label htmlFor="web" className="form-label">موقع الكتروني </label>
-                        <input type="text" id='web' ref={refWeb} className="form-control"  />
+                        <input type="text" id='web' ref={refWeb} className="form-control" placeholder='  يبدأ بـ https://www  أو http://www' />
                     </div>
 
-                    <div className="input-cont mb-3 d-flex ">
+                    <div className="input-cont mb-3 d-flex pe-2">
                         <label htmlFor="email" className="form-label">بريد الكتروني </label>
                         <input type="text" id='email' ref={refEmail} className="form-control"  />
                     </div>
 
-                    <div className="input-cont mb-3 d-flex ">
+                    <div className="input-cont mb-3 d-flex pe-2">
                         <label htmlFor="youtube" className="form-label">قناة يوتيوب  </label>
-                        <input type="text" id='youtube' ref={refYoutube} className="form-control"  />
+                        <input type="text" id='youtube' ref={refYoutube} className="form-control" placeholder='  يبدأ بـ https://www  أو http://www' />
                     </div>
                 </div>
 

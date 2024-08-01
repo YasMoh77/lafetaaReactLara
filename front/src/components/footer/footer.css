@@ -2,10 +2,17 @@
 footer{
 	background: #1c3b92;
 	color: white;
-	height:60vh;
+	height:85vh;
 }
-footer div:first-child{
+footer .para{
     font-size:1.7vw;
+	flex: 1.45 1;
+    margin-left: 12vw;
+    line-height: 12vh;
+    margin-right: 2vw;
+}
+footer .row{
+	flex: 3;
 }
 footer .row, footer .col, footer .card{
 	background: #1c3b92;
@@ -21,12 +28,13 @@ footer .row{
 	display: block;
 	margin-bottom: 5vh;
     text-decoration: none;
-	color: white;
+	color: #cdc9c9;
 }
 .card-body a:hover{
     text-decoration: underline;
+	color: white;
 }
 .bottom{
-	height: 10vh;
+	height: 13vh;
 	color: white;
 }

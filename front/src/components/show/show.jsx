@@ -1,10 +1,13 @@
 import React, {useRef,useEffect,useState } from 'react';
+import {Link} from 'react-router-dom'
 import {http} from '../axios/axiosGlobal'
 import './show.css';
-//import '../images/images'
+import ShowSaved from  './ShowSaved'
 
 
 function Show() {
+    const loginData=JSON.parse(localStorage.getItem('loginData'));
+
     const refCountry = useRef()
     const refState = useRef()
     const refCity = useRef()
@@ -12,6 +15,7 @@ function Show() {
     
     //bringLinks 
     const [ads, setAds] = useState([])
+
     //search
     const [state, setState] = useState([])
     const [city, setCity] = useState([])
@@ -22,20 +26,15 @@ function Show() {
     const [msg, setMsg] = useState('')
     const [loading, setLoading] = useState(true)
     const [loadingSearch, setLoadingSearch] = useState(false)
-   // const [loadingState, setLoadingState] = useState(false)
     const [loadingMore, setLoadingMore] = useState(false)
+
     //loadMore
     const [currentPage, setCurrentPage] = useState(1)
+
     //enlarge image
     const [enlarge, setEnlarge] = useState('')
     const baseURL='http://127.0.0.1:8000/storage/images/';
-        
-
-    useEffect(() => {
-        bringLinks();
-       // getStates();
-    }, []) 
-
+    
      //get the first 12 items on homepage when page loads
 const bringLinks=async()=>{
 	setLoading(true);//start loading spinner	
@@ -43,6 +42,12 @@ const bringLinks=async()=>{
     setAds(res.data);//store data in ads
     setLoading(false);//end loading spinner
 }
+
+useEffect(() => {
+    bringLinks();
+   // getStates();
+}, []) 
+
 
 //search function
 const searchFunc=async(e)=>{
@@ -55,10 +60,12 @@ const searchFunc=async(e)=>{
         const countryValue=parseInt(refCountry.current.value);
         const stateValue=parseInt(refState.current.value,10);
         const cityValue=parseInt(refCity.current.value,10);
+
         //store values
         const postData={countryValue,stateValue,cityValue,currentPage}
-        //fetch data
-        const res= await http.post('http://127.0.0.1:8000/api/search',postData);
+        //fetch data when search form is submitted
+        const res= await http.post('/search',postData);
+        
         //set values
         setMsg(res.data.msg);
         setFree(res.data.free);
@@ -74,7 +81,7 @@ const loadMore=async()=>{
     //start loading
     setLoadingMore(true);
     const Page = currentPage + 1;
-     //console.log(Page);
+    
      const countryValue=parseInt(refCountry.current.value);
      const stateValue=parseInt(refState.current.value,10);
      const cityValue=parseInt(refCity.current.value,10);
@@ -114,7 +121,7 @@ async function getStates(cont){
    });
    setState(res.data); 
 }catch(error){
-    console.error(error)
+    
   }
 }
 
@@ -125,6 +132,8 @@ async function getCities(state){
     const res3= await http.post("http://127.0.0.1:8000/api/cities",postData);
     setCity(res3.data);
 }
+
+
 
 
 
@@ -139,16 +148,19 @@ async function getCities(state){
                                 <div  className="container-fluid">
                                     <p className="paid"> لافتات مميزة</p>
                                     <div className="row">
-                                        <div id="show"  className="d-flex flex-wrap show-wrapper justify-content-space-between col-sm-12">
+                                        <div id="show"  className="d-flex flex-wrap show-wrapper justify-content-between col-sm-12">
                                         { ads.map((e,index)=>(<div className='col-xs-12 col-md-4 main'>
                                             <img  onClick={(e)=>{enlargeFun(e.target.src)}} key={index} src={baseURL+e.photo} alt={e.NAME} className='w-100 mx-auto d-block img'/> 
-                                            <div className='pe-1'>{e.NAME}</div>                                            
-                                            <div className='featured-icons-div d-flex px-1'>
-                                               {e.phone != null ? <a href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 
-                                               {e.whatsapp !=null ? <a href={'https://wa.me/'+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a><i class="bi bi-whatsapp empty"></i></a> } 
-                                               {e.website !=null ? <a href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a><i class="bi bi-globe-americas empty"></i></a>} 
-                                               {e.item_email !=null ? <a href='mailto:hgq1100@yahoo.com'><i class="bi bi-envelope-at-fill full-env"></i></a> : <a><i class="bi bi-envelope-at-fill empty"></i></a> } 
-                                               {e.youtube !=null ? <a href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a><i class="bi bi-youtube empty"></i></a> } 
+                                            <div className='pe-1 mb-1'>{e.NAME}</div>                                            
+                                            <div className='featured-icons-div d-flex px-1 justify-content-between'>
+                                               <div>
+                                                    {e.phone != null ? <a href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 
+                                                    {e.whatsapp !=null ? <a href={'https://wa.me/'+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a><i class="bi bi-whatsapp empty"></i></a> } 
+                                                    {e.website !=null ? <a href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a><i class="bi bi-globe-americas empty"></i></a>} 
+                                                    {e.item_email !=null ? <a href='mailto:hgq1100@yahoo.com'><i class="bi bi-envelope-at-fill full-env"></i></a> : <a><i class="bi bi-envelope-at-fill empty"></i></a> } 
+                                                    {e.youtube !=null ? <a href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a><i class="bi bi-youtube empty"></i></a> } 
+                                               </div>
+                                               {loginData ?  <ShowSaved id={e.item_id} /> : <Link to='/login'><i className='bi bi-heart align-self-center'></i></Link> }
                                             </div>
                                         </div> )) }
                                         </div>
@@ -202,19 +214,24 @@ async function getCities(state){
                                    <div className="row">
                                        <p className="free">{free}</p>
                                         <small className="mb-2 d-block"> {adsNum} </small>
-                                        <div id="show2"  className="d-flex flex-wrap show-wrapper justify-content-space-between ">
+                                        <div id="show2"  className="d-flex flex-wrap show-wrapper justify-content-between ">
                                             {result&&result.length>0 ?  result.map((e,index)=>(
                                                 <div className='col-xs-12 col-md-6 col-lg-4 main2'>
-                                                    <img onClick={(e)=>{enlargeFun(e.target.src)}} key={index} src={baseURL+e.photo} alt={e.NAME} className='w-100 h-100 mx-auto d-block img'/> 
-                                                    <div className='pe-1 mb-2'>{e.NAME}</div>                                            
-                                                    <div className='featured-icons-div d-flex px-1'>
-                                                    {e.phone != null ? <a href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 
-                                                    {e.whatsapp !=null ? <a href={'https://wa.me/'+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a><i class="bi bi-whatsapp empty"></i></a> } 
-                                                    {e.website !=null ? <a href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a><i class="bi bi-globe-americas empty"></i></a>} 
-                                                    {e.item_email !=null ? <a href='mailto:hgq1100@yahoo.com'><i class="bi bi-envelope-at-fill full-env"></i></a> : <a><i class="bi bi-envelope-at-fill empty"></i></a> } 
-                                                    {e.youtube !=null ? <a href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a><i class="bi bi-youtube empty"></i></a> } 
+                                                    <img onClick={(e)=>{enlargeFun(e.target.src)}} key={index} src={baseURL+e.photo} alt={e.NAME} className='w-100 mx-auto d-block img'/> 
+                                                    <div className='pe-1 mb-1'>{e.NAME}</div>                                            
+                                                    <div className='featured-icons-div d-flex px-1 justify-content-between'>
+                                                        <div>
+                                                            {e.phone != null ? <a  href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 
+                                                            {e.whatsapp !=null ? <a href={'https://wa.me/'+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a><i class="bi bi-whatsapp empty"></i></a> } 
+                                                            {e.website !=null ? <a href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a><i class="bi bi-globe-americas empty"></i></a>} 
+                                                            {e.item_email !=null ? <a href='mailto:hgq1100@yahoo.com'><i class="bi bi-envelope-at-fill full-env"></i></a> : <a><i class="bi bi-envelope-at-fill empty"></i></a> } 
+                                                            {e.youtube !=null ? <a href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a><i class="bi bi-youtube empty"></i></a> } 
+                                                        </div>
+                                                       {loginData ?  <ShowSaved id={e.item_id} /> : <Link to='/login'><i className='bi bi-heart align-self-center'></i></Link> }
+                                                       
                                                     </div>
                                             </div>
+                                            
                                              ))   : (<p className="mx-auto"> {msg} </p>) 
                                             }
                                         </div>

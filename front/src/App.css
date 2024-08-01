@@ -38,12 +38,30 @@
 }
 */
 
-/**show divs next to navbar */
-.navbar+div{
-  margin-top: 15vh;
-  padding-top: 3vh;
+:root{
+	--mainColor: #ffaa00;
+	--textColor:#0aadad;
 }
-.red{ color:red}
+body{
+	direction: rtl;
+	background: #fbfbfba6;
+}
+/* classes **/
+.none{display: none;}
+.w-fit{width: fit-content;}
+.red{color: red;} 
+.gray{color: gray;}
 .green{ color: green;}
 .yellow{ color: #fbff05;}
 .white{ color: white;}
+/**show divs next to navbar */
+.navbar+div{
+  margin-top: 20vh;
+  padding-top: 3vh;
+}
+.container-fluid{
+  padding-right: 0;
+}
+.row{
+  margin-right: -2vw !important;
+}

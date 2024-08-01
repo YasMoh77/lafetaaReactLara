@@ -17,32 +17,29 @@ const Nav = () => {
                     </button>
                     <div className="collapse navbar-collapse left" id="navbarNav">
                         <ul className="navbar-nav">
-                        <li className="nav-item">
-                            <Link to="/" className="nav-link active" aria-current="page" >الرئيسية</Link>
-                        </li>
-                        <li className="nav-item">
-                            <a className="nav-link" href="#">عن الموقع</a>
-                        </li>
-                        <li className="nav-item">
-                            <a className="nav-link" href="#">سؤال وجواب</a>
-                        </li>
-                        <li className="nav-item">
-                            <Link to='/add' className="nav-link ">أضف لافتة مجانا</Link>
-                        </li>
-                        
-                        {
-                            loginData ? 
-                            (<li className="nav-item">
-                               <Link to='/profile' className="nav-link ">  حسابي</Link>
-                            </li>) 
-                             :
-                            (<li className="nav-item">
-                               <Link to='/login' className="nav-link ">  دخول</Link>
-                            </li>)
-                        }
-                        
+                            <li className="nav-item">
+                                <Link to="/" className="nav-link active" aria-current="page" >الرئيسية</Link>
+                            </li>
+                            <li className="nav-item">
+                                <a className="nav-link" href="#">عن الموقع</a>
+                            </li>
+                            <li className="nav-item">
+                                <a className="nav-link" href="#">سؤال وجواب</a>
+                            </li>
+                            
+                             {
+                                loginData ? 
+                                (<li className="nav-item">
+                                <Link to='/profile' className="nav-link ">  حسابي</Link>
+                                </li>) 
+                                :
+                                (<li className="nav-item">
+                                <Link to='/login' className="nav-link ">  دخول</Link>
+                                </li>)
+                             }
                         
                         </ul>
+                        <button className='border-0 py-2 px-3 rounded-2 white fw-bold add-nav'>  <Link to='/add' className="nav-link ">أضف لافتة </Link></button>
                     </div>
                     </div>
                 </nav>

@@ -33,6 +33,14 @@ const ProfileSigns = () => {
     const [imgId, setImgId] = useState('')
     const [imgName, setImgName] = useState('')
     const [imgSrc, setImgSrc] = useState('')
+    //optional
+    const [optPhone, setOptPhone] = useState('')
+    const [optWhats, setOptWhats] = useState('')
+    const [optEmail, setOptEmail] = useState('')
+    const [optWeb, setOptWeb] = useState('')
+    const [optYoutube, setOptYoutube] = useState('')
+    const [countryId, setCountryId] = useState('')
+
     const refTitle = useRef('')
     const refSmall = useRef('')
     const refFile = useRef('')
@@ -42,6 +50,13 @@ const ProfileSigns = () => {
     const [responseError, setResponseError] = useState('')
     const [responseOk, setResponseOk] = useState('')
     const [editFeature, setEditFeature] = useState('')
+    //additional values
+    const refPhone = useRef('')
+    const refWhats = useRef('')
+    const refEmail = useRef('')
+    const refWeb = useRef('')
+    const refYoutube = useRef('')
+
 
     //for making ads pro (tameez)
     const [imgRocketId, setImgRocketId] = useState('')
@@ -110,12 +125,20 @@ const ProfileSigns = () => {
     }
   
      //edit ads
-    const editAd=(id,NAME,src,feature)=>{
+    const editAd=async(id,NAME,src)=>{
        setImgId(id)
        setImgName(NAME)
        setImgSrc(src)
-      //feature==2 ? setEditFeature(feature) : setEditFeature('');
-      // console.log(editFeature)
+       //api  call
+       const res=await http.post('/fields',{id});
+       setOptPhone(res.data.phone ? res.data.phone : '')
+       setOptWhats(res.data.whats ? res.data.whats : '')
+       setOptWeb(res.data.web ? res.data.web : '')
+       setOptEmail(res.data.email ? res.data.email : '')
+       setOptYoutube(res.data.youtube ? res.data.youtube : '')
+
+       setCountryId(res.data.country==1?'20':res.data.country==2?'9660':res.data.country==3?'9650':res.data.country==4?'9710':res.data.country==5?'9740':'9680')
+     
        document.querySelector('body').style.overflow='hidden';
     }
     const stopEditAd=()=>{
@@ -147,7 +170,7 @@ const ProfileSigns = () => {
 
     //show error if title <5 or >40
     const showErrorTitle=(field,ref)=>{
-        if(ref==refTitle && (field.length<5 || field.length>40 ) ){ref.current.style.backgroundColor='#e87878'; refSmall.current.style='color:#e87878;font-weight:bold'}else{ref.current.style.backgroundColor='white'; refSmall.current.style='color:initial;font-weight:initial'}
+        if(ref==refTitle && (field && field.length<5 || field && field.length>40 ) ){ref.current.style.backgroundColor='#e87878'; refSmall.current.style='color:#e87878;font-weight:bold'}else{ref.current.style.backgroundColor='white'; refSmall.current.style='color:initial;font-weight:initial'}
     }
 
     //show form error
@@ -212,26 +235,43 @@ const ProfileSigns = () => {
         e.preventDefault();
         //stop showing error message
         setResponseError('')
+        setResponseOk('')
     
         //values
         const title = refTitle.current.value.trim();
         const id = parseInt(refId.current.value, 10);
         const file = refFile.current.files[0];
+        //additional values
+        const phoneInput=refPhone.current.value;
+        const phoneUpdate= phoneInput=='' ? 0 : isNaN(parseInt(refPhone.current.value,10))?0:parseInt(refPhone.current.value,10);
+        const whatsInput=refWhats.current.value;
+        const whats=whatsInput=='' ? 0 : isNaN(parseInt(refWhats.current.value,10))?0:parseInt(refWhats.current.value,10);
+        const web=refWeb.current.value;
+        const emailSocial=refEmail.current.value;
+        const youtube=refYoutube.current.value;
 
           //check if form values are valid
-          showError(title,'',refTitle);
+         // showError(title,'',refTitle);
           showErrorTitle(title,refTitle);
-          showError(file,null,refFile);
+         // showError(file,null,refFile);
           
           // Create a FormData object
           const formData = new FormData();
           formData.append('title', title);
           formData.append('file', file);
           formData.append('email', email);
-
+          formData.append('phone', phoneUpdate);
+          formData.append('whats', whats);
+          formData.append('web', web);
+          formData.append('emailSocial', emailSocial);
+          formData.append('youtube', youtube);
+          formData.append('id',id)
+         // console.log(email,'ti='+title,'ph='+phoneUpdate)
+          if(web==''){console.log('null');}else{console.log('not null');}
           //check if not all fields are empty
-          if(title && title.length>=5 && title.length<=40  ||  file!=null ){
+          if( title!='' && title.length>=5 && title.length<=40  ||  file!=null || phoneUpdate!=0 || whats!=0 || web!='' || emailSocial!='' || youtube!=''){
           try {
+
             setLoadForm(true);
             const res = await axios.post(`http://127.0.0.1:8000/api/ads/update/${id}`, formData, {
               headers: {
@@ -243,13 +283,12 @@ const ProfileSigns = () => {
             
             // Return to normal
             setLoadForm(false);
-            const mes=res.data.message;
-            setResponseOk(mes)
+            setResponseOk(res.data.message)
             //close overlay and reload
             setTimeout(() => {
-              stopEditAd();
-              window.location.reload();
-            }, 2500);
+             // stopEditAd();
+             // window.location.reload();
+            }, 2000);
 
 
           } catch (error) {
@@ -257,6 +296,9 @@ const ProfileSigns = () => {
             error.response ? setResponseError(error.response.data.errors) :setResponseError('');
 
           }
+       }else{
+        setResponseOk(<span className='red'>لا توجد تعديلات</span>)
+
        }
   };
 
@@ -291,6 +333,42 @@ const ProfileSigns = () => {
                      <label  className='d-block mb-2' >تغيير الصورة</label>
                      <input type='file' className='d-block mb-5' ref={refFile} />
 
+                     {/* optional fields about contacting */}
+                     <div className='py-4 my-5 ps-2 '>
+                        <p className='fs-4 fw-bold'>حقول اختيارية</p>
+
+                        <div className="input-cont-pro mb-4 d-flex ">
+                            <label htmlFor="phone" className="form-label">تليفون محمول </label>
+                            <input type="text" id='phone' ref={refPhone}  className="form-control" placeholder={'0'+optPhone} />
+                        </div>
+
+                        <div className="input-cont-pro d-flex ">
+                            <label htmlFor="whats" className="form-label"> واتس اب </label>
+                            <input type="text" id='whats' ref={refWhats} className="form-control" placeholder={countryId+optWhats} />
+                        </div>
+                        <small className='w-fit mx-auto mt-0 mb-4 d-block'>رقم بالاضافة لرمز الدولة</small>
+
+
+                        <div className="input-cont-pro d-flex ">
+                            <label htmlFor="web" className="form-label">موقع الكتروني </label>
+                            <input type="text" id='web' ref={refWeb} className="form-control" placeholder={optWeb} />
+                        </div>
+                        <small className='w-fit mx-auto mt-0 mb-4 d-block'> يبدأ بـ https://www  &emsp; أو &emsp; http://www</small>
+
+
+                        <div className="input-cont-pro mb-4 d-flex ">
+                            <label htmlFor="email" className="form-label">بريد الكتروني </label>
+                            <input type="text" id='email' ref={refEmail} className="form-control" placeholder={optEmail} />
+                        </div>
+
+                        <div className="input-cont-pro d-flex ">
+                            <label htmlFor="youtube" className="form-label">قناة يوتيوب  </label>
+                            <input type="text" id='youtube' ref={refYoutube} className="form-control" placeholder={optYoutube} />
+                        </div>
+                        <small className='w-fit mx-auto mt-0 mb-4 d-block'> يبدأ بـ https://www  &emsp; أو &emsp; http://www</small>
+
+                     </div>
+
                      <input type='hidden'  ref={refId} value={imgId} />
                      <input type='hidden'  ref={refEditFeature} value={editFeature} />
                      
@@ -298,17 +376,18 @@ const ProfileSigns = () => {
                       {loadForm ? <button  className='btn btn-info w-25 mx-auto d-block'><span className='spinner-border gray d-block m-auto'></span></button> : <button className='btn btn-info w-25 mx-auto d-block'>أرسل</button> }
                      
                       {/* show form error */}
-                      <p className='mb-0 mx-auto mt-3 w-fit green' dangerouslySetInnerHTML={{ __html : responseOk }} />
+                     {responseOk &&  <p className='mx-auto mt-3 mb-5 w-fit green' > {responseOk}</p> }
+                       
                       {/* show form error */}
                       {responseError && Object.keys(responseError).map((key)=>(
                         <div className='mt-3 '>
                             {responseError[key].map((e)=>(
-                                <p className='mb-0 mx-auto w-fit red'>{e}</p>
+                                <p className='mb-0 mx-auto w-fit red'>{e}- {key}</p>
                             ))}
                         </div>
                       ))  }
                     {/* end show form error */}
-                 </form><i onClick={stopEditAd} className="close-btn bi bi-x-square" ></i>
+                 </form><i onClick={stopEditAd} className="close-btn bi bi-x-square-fill" ></i>
               </div>)}
 
 
@@ -384,7 +463,7 @@ const ProfileSigns = () => {
              {/* show ads on the page */}
             <div className='container-fluid'>
                    <p>{adsNum}</p>
-                   <div id="show2"  className="d-flex flex-wrap show-wrapper justify-content-space-between ">
+                   <div id="show2"  className="d-flex flex-wrap show-wrapper justify-content-between ">
                     {
                         loading ? (<p className='spinner-border gray mx-auto'></p>) : data && data.length>0 && data.map((e, index)=>(
                             <div key={e.item_id} className='col-xs-12 col-md-6 col-lg-4 main3 main-prof'>
@@ -393,21 +472,23 @@ const ProfileSigns = () => {
                                       <ShowSubcat subId={e.subcat_id} />*/}
                                 <div className='pe-1 my-1'>{e.NAME}</div>                                            
                                 <div className='featured-icons-div d-flex px-1'>
-                                    {e.phone != null ? <a href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 
-                                    {e.whatsapp !=null ? <a href={'https://wa.me/'+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a><i class="bi bi-whatsapp empty"></i></a> } 
-                                    {e.website !=null ? <a href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a><i class="bi bi-globe-americas empty"></i></a>} 
-                                    {e.item_email !=null ? <a href='mailto:hgq1100@yahoo.com'><i class="bi bi-envelope-at-fill full-env"></i></a> : <a><i class="bi bi-envelope-at-fill empty"></i></a> } 
-                                    {e.youtube !=null ? <a href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a><i class="bi bi-youtube empty"></i></a> } 
+                                   <div>
+                                        {e.phone >0 ? <a href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 
+                                        {e.whatsapp >0 ? <a href={'https://wa.me/'+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a><i class="bi bi-whatsapp empty"></i></a> } 
+                                        {e.website !=null ? <a href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a><i class="bi bi-globe-americas empty"></i></a>} 
+                                        {e.item_email !=null ? <a href='mailto:hgq1100@yahoo.com'><i class="bi bi-envelope-at-fill full-env"></i></a> : <a><i class="bi bi-envelope-at-fill empty"></i></a> } 
+                                        {e.youtube !=null ? <a href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a><i class="bi bi-youtube empty"></i></a> } 
+                                    </div>
                                 </div>
                                             
-                                <div key={e.item_id} className='d-flex justify-content-around mt-2'>
-                                        {/* edit ad*/}
-                                      <i title='تحرير' onClick={(e)=>{editAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.previousSibling.previousSibling.previousSibling.name)}} className='bi bi-wrench'></i>
-                                        {/* promote and display according to plan*/}
+                                <div key={e.item_id} title={e.phone} className='d-flex justify-content-around mt-2'>
+                                       {/* edit ad*/}
+                                      <i title='تحرير' onClick={(e)=>{editAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.title)}} className='bi bi-wrench'></i>
+                                       {/* promote and display according to plan*/}
                                       {e.feature==2 && <i title='باقة ذهبية'    className="bi bi-rocket-takeoff-fill green"></i>}
                                       {e.feature==1 && <i title='باقة فضية'  onClick={(e)=>{ tameezAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.previousSibling.previousSibling.previousSibling.name)  }}  className="bi bi-rocket-takeoff-fill yellow"></i>}
                                       {e.feature==0 && <i title='تمييز'  onClick={(e)=>{ tameezAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.previousSibling.previousSibling.previousSibling.name)  }}  className="bi bi-rocket-takeoff"></i>}
-                                        {/* delete ad*/}
+                                       {/* delete ad*/}
                                       <i title='حذف' className='bi bi-trash'></i>
                                 </div>
                             </div>

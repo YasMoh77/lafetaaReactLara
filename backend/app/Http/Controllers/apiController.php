@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Plan;
 use App\Models\Ad;
 use App\Models\User; 
+use App\Models\Favourite; 
 use App\Events\VerifyEvent;
 use Illuminate\Support\Facades\Crypt;
 use Carbon\Carbon;
@@ -274,6 +275,73 @@ class apiController extends Controller
 
 
 
+    //saved ad
+    public function saveAd(Request $request)
+    {
+      $id=$request->id;
+      $user_id=User::where('email',$request->userEmail)->value('id');
+
+      //check if ad is found or deleted
+      $found=Ad::where('item_id',$id)->first();
+      if ($found) {
+         //check if ad was added to favourite before
+         $favourited=Favourite::where(['item_id'=>$id,'user_id'=>$user_id])->first();
+         if($favourited){ //if it was added, check again
+
+             if($favourited->status==1){ // user still favourites
+                $favourited->update(['status'=>0]);//change to un favourite
+                return response()->json(['message'=>'unsaved']);
+            }else{ //user doesn't favourite
+                $favourited->update(['status'=>1]);//change to favourite
+                return response()->json(['message'=>'saved']);
+            }
+
+         }else{ 
+             //add new favourite ad
+             $favourite=new Favourite();
+             $favourite->item_id=$id;
+             $favourite->user_id=$user_id;
+             $favourite->save();
+             return response()->json(['message'=>'saved']);
+         }       
+      }
+    }
+
+
+    //check
+    public function checkSaved(Request $request)
+    {
+        $id=$request->id;
+        $user_id=User::where('email',$request->userEmail)->value('id');
+        //check if ad was added to favourite before
+        $favourited=Favourite::where(['item_id'=>$id,'user_id'=>$user_id])->first();
+        if($favourited){ //if it was added, check again
+            if($favourited->status==1){ // user still favourites
+                return response()->json(['message'=>'saved']);
+            }else{ //user doesn't favourite
+                return response()->json(['message'=>'unsaved']);
+            }        
+        }
+    }
+
+
+
+    //fields
+    public function fields(Request $request)
+    {
+       $fields=Ad::where('item_id',$request->id)->first();
+       return response()->json([
+           'phone'  =>$fields->phone,
+           'whats'  =>$fields->whatsapp,
+           'web'    =>$fields->website,
+           'email'  =>$fields->item_email,
+           'youtube'=>$fields->youtube,
+           'country'=>$fields->country_id
+       ]);
+    }
+
+
+    
     //searched ads
     public function search(Request $request)
     {

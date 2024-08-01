@@ -203,123 +203,75 @@ class apiAds extends Controller
     $USERID=User::where('email',$request->email)->value('id');
     $admin=User::where('id',$USERID)->value('admin');
     $approve=$admin=='ok'?1:2;
+     
+    $validate=$request->validate([
+        'title' => 'nullable|string|max:40|min:5',
+        'phone'=> 'nullable' ,
+        'whats'=> 'nullable',
+        'web'=> 'nullable|url:http,https',
+        'emailSocial'=> 'nullable|email',
+        'youtube'=> 'nullable|url:http,https'
 
-   //validate title if exists
-   if($request->title){
-        $validate=$request->validate([
-            'title' => 'nullable|string|max:40|min:5',
-        ]);
+    ]);
 
-        //report error msg if something is wrong
-        if(!$validate){
-            return response()->json(['message'=>'watch errors with title']);
-        }
+ if($validate){ 
 
-         //check if title is not empty
-        $titleToAdd=$request->title ? strip_tags($request->title):'';
-       if($titleToAdd!=''){
-          Ad::where('item_id', $id)->update(['NAME'=>$titleToAdd,'approve'=>$approve]);
-          return response()->json(['message' => '<i class="bi bi-check-circle-fill fs-2 "></i>']);
-       }     
-    }
+     //check if file has image
+     $adTable= Ad::where('item_id',$id)->first();
+     $ad=Ad::where('item_id',$id);
 
-   //validate file if exists
-   if($request->file('file')){
-        $validate2=$request->validate([
-            'file' => 'image|mimes:jpg,jpeg,png|max:500|min:1'
-        ]);
-
-        //report error msg if something is wrong
-        if(!$validate2){
-            return response()->json(['message'=>'watch errors with img']);
-        }
+       //if item exists
+       if($adTable){
         
-        //check if file has image
-        $fileToAdd=$request->file('file') ? $request->file('file'):'';
-        if($fileToAdd!=''){
-          $found=Ad::where('item_id', $id)->first();
-
-          //if item exists
-          if($found){
-                // Generate real file name
-                $fileName = $fileToAdd->getClientOriginalName();
-                //explode fileName to get extension
-                $ext=explode('.',$fileName);
-                $realExt=end($ext);
-                $newPhoto=rand(0,10000000000000).'.'.$realExt;
-        
-                // Get old image
-                $oldPhoto = Ad::where('item_id', $id)->value('photo');
-        
-                // Delete old image if it exists
-                if ($oldPhoto) {
-                    $oldImgPath = 'public/images/' . $oldPhoto;
-                    Storage::delete($oldImgPath);
+           //check request->file
+           if($request->file('file')){
+               //validate file
+              $validate=$request->validate(['file' => 'image|mimes:jpg,jpeg,png|max:500|min:1',]);
+              
+              if($validate){
+                    $fileToAdd=$request->file('file');
+                    // Generate real file name
+                    $fileName = $fileToAdd->getClientOriginalName();
+                    //explode fileName to get extension
+                    $ext=explode('.',$fileName);
+                    $realExt=end($ext);
+                    $newPhoto=rand(0,10000000000000).'.'.$realExt;
+            
+                    // Get old image
+                    $oldPhoto = Ad::where('item_id', $request->id)->value('photo');
+            
+                    // Delete old image if it exists
+                    if ($oldPhoto) {
+                        $oldImgPath = 'public/images/' . $oldPhoto;
+                        Storage::delete($oldImgPath);
+                    }     
+                         
+                    // Store new image
+                    $fileToAdd->storeAs('public/images', $newPhoto);
+                    // Add new photo to update data
+                    $ad->update(['photo'=>$newPhoto]);
                 }
-        
-                // Store new image
-                $fileToAdd->storeAs('public/images', $newPhoto);
-        
-                // Add new photo to update data
-                Ad::where('item_id', $id)->update(['photo'=>$newPhoto,'approve'=>$approve]);
-                return response()->json(['message' => '<i class="bi bi-check-circle-fill fs-2 "></i>']);
-    
-             }
+            }
 
-        }    
-   }    
-  
+            //update fields if found
+            if($request->title){$ad->update([ 'NAME'=> strip_tags($request->input('title'))]);}             
+            if($request->phone){ $ad->update([ 'phone'=> strip_tags($request->input('phone'))]);}
+            if($request->whats){ $ad->update([ 'whatsapp'=> strip_tags($request->input('whats'))]);}
+            if($request->emailSocial){ $ad->update([ 'item_email'=> strip_tags($request->input('emailSocial'))]);}
+            if($request->web){ $ad->update([ 'website'=> strip_tags($request->input('web'))]);}
+            if($request->youtube){ $ad->update([ 'youtube'=> strip_tags($request->input('youtube'))]);}
+            $ad->update(['approve'=>$approve]);
+            
+            return response()->json(['message' => 'تم التعديل بنجاح']);//      
+        
+        }
+    }
+                     
 }
 
     
+
    
-     /* public function update(Request $request, string $id)
-    {   
-        //store request values
-        $title=$request->title;
-        $file=$request->file('file');
-
-        //validate
-        if($title){
-            $validatedTitle=$request->validate([
-                'title'=>'max:100|nullable',
-            ]);
-
-             //update
-             Ad::where('item_id',$id)->update(['NAME'=>$title]);
-
-        }
-
-        if($file){
-            $validatedFile=$request->validate([
-                'file'=>'image|mimes:jpg,jpeg,png|max:500|min:1|nullable'
-            ]);
-
-            //get extension
-            $file=$request->file('file');
-            $fileName=$file->getClientOriginalName();
-            $ext=explode('.',$fileName);
-            $realExt=end($ext);
-            $newPhoto=rand(0,10000000000000).'.'.$realExt;
-
-            //get old image
-            $old=Ad::where('item_id',$id)->value('photo');
-
-            //delete old image
-            $oldImg='public/images/'.$old;
-            storage::delete($oldImg);
-
-            //store
-            $file->storeAs('public/images',$newPhoto);
-
-            //update
-            Ad::where('item_id',$id)->update(['photo'=>$newPhoto]);
-            return response()->json(['msg'=>$newPhoto]);
-
-        }
-     
-
-    }*/
 
     /**
      * Remove the specified resource from storage.

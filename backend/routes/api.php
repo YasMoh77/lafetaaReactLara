@@ -37,6 +37,15 @@ Route::group([],function () {
     Route::post('reset-password',[apiController::class,'resetPassword']);
     //receive values for password change
     Route::post('package',[apiController::class,'package']);
+    //save 
+    Route::post('/save',[apiController::class,'saveAd']);
+     // check if ad is saved or not
+     Route::post('/checkSaved',[apiController::class,'checkSaved']);
+     // get fields
+     Route::post('/fields',[apiController::class,'fields']);
+
+
+
 
  });
 
@@ -51,7 +60,7 @@ Route::group([],function () {
     Route::get('/sub/{sub}',[apiAds::class,'getSub']);
     //update ads
     Route::post('update/{id}',[apiAds::class,'update'])->middleware('auth:sanctum'); //update certain user ads
-
+    
  });
 
 //get user data on logging 

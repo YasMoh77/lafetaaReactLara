@@ -1,15 +1,5 @@
-/* classes **/
-.none{display: none;}
-.w-fit{width: fit-content;}
-.red{color: red;} .gray{color: gray;}
-:root{
-	--mainColor: #ffaa00;
-	--textColor:#0aadad;
-}
-body{
-	direction: rtl;
-	background: #fbfbfba6;
-}
+
+
 .top-container{
 	margin: 22vh auto 5vh;
 	min-height: 60vh;
@@ -19,7 +9,6 @@ body{
 }
 /** show page */
 .show-wrapper{
-	justify-content: space-between;
 	padding: 0;
 }
 .main,.main2,.main3{
@@ -27,9 +16,9 @@ body{
 	margin-bottom: 5vh;
 }
 .main{height: 85vh;}
-.main img{height: 84%;}
+.main img{height: 85%;}
 
-.main2{height: 65vh;}
+.main2{height: 80vh;}
 .main2 img{height: 85%;}
 
 .main3{height: 80vh;}
@@ -38,8 +27,8 @@ body{
 .featured-icons-div{
 	direction: ltr;
   }
-.featured-icons-div a{
-	margin-right: 3vw;
+.featured-icons-div div a{
+	margin-right: 2.5vw;
     font-size: 1.7vw;
 }
 .full-tel{color:#81eee0;}
@@ -54,10 +43,10 @@ body{
 }
 @media (min-width:992px){
 	.main{width: 49%;/*height: 55vh;*/}
-	 .main2{width: 32%;}
+	 .main2,.main3{width: 32%;}
 }
 @media (max-width: 767.98px){
-	.main,.main2{margin: 0 auto 5vh;width:100%}
+	.main,.main2,.main3{margin: 0 auto 5vh;width:100%}
 }
 /** click img to enlarge*/
 .overlay {
@@ -81,9 +70,9 @@ body{
 .close-btn {
 	position: absolute;
 	top: 70px;
-	right: 30px;
+	right: 25px;
 	font-size: 30px;
-	color: white;
+	color: #e11313;
 	cursor: pointer;
 }
 .no-scroll{
