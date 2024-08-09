@@ -83,7 +83,8 @@ const Login = () => {
                       // store only user name and email 
                       const name=res2.data.name;
                       const email=res2.data.email;
-                      const user={name,email}
+                      const admin=res2.data.admin
+                      const user={name,email,admin}
 
                       //store name and email in localStorage
                       localStorage.setItem('loginData',JSON.stringify(user))

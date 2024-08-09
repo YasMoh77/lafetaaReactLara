@@ -21,10 +21,10 @@ const Nav = () => {
                                 <Link to="/" className="nav-link active" aria-current="page" >الرئيسية</Link>
                             </li>
                             <li className="nav-item">
-                                <a className="nav-link" href="#">عن الموقع</a>
+                                <Link to='/about' className="nav-link" href="#">عن الموقع</Link>
                             </li>
                             <li className="nav-item">
-                                <a className="nav-link" href="#">سؤال وجواب</a>
+                                <Link to='/faq' className="nav-link" href="#">سؤال وجواب</Link>
                             </li>
                             
                              {

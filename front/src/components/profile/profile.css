@@ -1,3 +1,5 @@
+/* classes */
+
 .prof-head{
     margin-right: .2vw !important;
 }
@@ -13,6 +15,10 @@
 .main-prof{
     margin-bottom: 10vh;
 }
+.input-search-profile{
+    height: 8vh;
+}
+
 /*edit in profile*/
 .head-edit{
     background-color: #0a9e59;
@@ -31,6 +37,7 @@
     height: calc(100% - 30px);
     top: 35px;
 }
+
 /** optional fields */
 .input-cont-pro label{
     flex: 1;
@@ -41,8 +48,19 @@
 .input-cont-pro input{
     border: 1px solid gray;
 }
+
 /** making ad pro(tameez) */
 .head-pro{
     background-color: #e426a5;
 }
 
+/** search in profile */
+.main3{
+	border: 1px solid lightgray;
+	margin-bottom: 5vh;
+}
+
+.main3{height: 80vh;}
+.loadMoreBtn{
+    margin-bottom: 20vh;
+}

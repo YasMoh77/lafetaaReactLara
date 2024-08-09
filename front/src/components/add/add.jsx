@@ -78,27 +78,39 @@ const Add = () => {
     }
     //show error if title <5 or >40
     const showErrorTitle=(field,ref)=>{
-        if(ref==title && (field.length<5 || field.length>40 ) ){ref.current.style.backgroundColor='#e87878'; refSmall.current.style='color:#e87878;font-weight:bold'}else{ref.current.style.backgroundColor='white'; refSmall.current.style='color:initial;font-weight:initial'}
+        if(ref===title && (field.length<5 || field.length>40 ) ){ref.current.style.backgroundColor='#e87878'; refSmall.current.style='color:#e87878;font-weight:bold'}else{ref.current.style.backgroundColor='white'; refSmall.current.style='color:initial;font-weight:initial'}
     }
-    
+
+
+    //regex expresiion
+    const reg=/^[0-9]+$/;
+    const showErrorPhone=(phone)=>{
+        if(!reg.test(phone)){
+           refPhone.current.style.backgroundColor='#e87878';
+           return 1; //wrong phone number
+       }else{
+           refPhone.current.style.backgroundColor='white';
+           return null; //correct phone number
+       }
+   }
 
     //submit add
     const submitAddFunc=async(e)=>{
-        e.preventDefault();
+             e.preventDefault();
 
         //get values from form
         const loginData=JSON.parse(localStorage.getItem('loginData'));
         const email= loginData && loginData.email;//means user already signed in
         const titleValue=title.current.value.trim();
-        const countryValue=parseInt(country.current.value,10);
-        const stateValue=parseInt(state.current.value,10);
-        const cityValue=parseInt(city.current.value,10);
         const catValue=parseInt(cat.current.value,10);
         const subValue=parseInt(sub.current.value,10);
+        const countryValue=parseInt(country.current.value,10);
+        const stateValue=parseInt(state.current.value,10);
+        const cityValue=parseInt(city.current.value,10);  
+        const phone=refPhone.current.value; //
         const photoValue=photo.current.files[0];
 
         //additional values
-        const phone=parseInt(refPhone.current.value,10);
         const whats=parseInt(refWhats.current.value,10);
         const web=refWeb.current.value;
         const emailSocial=refEmail.current.value;
@@ -114,19 +126,21 @@ const Add = () => {
         showError(countryValue,0,country);
         showError(stateValue,0,state);
         showError(cityValue,0,city);
+        showErrorPhone(phone);
         showError(photoValue,null,photo);
-
+      // console.log(showErrorPhone(phone))
         //store values
         const postData={titleValue,catValue,subValue,countryValue,stateValue,cityValue,photoValue,email,phone,whats,web,emailSocial,youtube}
        
         //send values to backend
-        if(titleValue && titleValue.length>=5 && titleValue.length<=40  && catValue>0 && subValue>0 && countryValue>0 && stateValue>0 && cityValue>0 && photoValue!=null ){
-            try{
+        if(titleValue && titleValue.length>=5 && titleValue.length<=40  && catValue>0 && subValue>0 && countryValue>0 && stateValue>0 && phone  && showErrorPhone(phone)==null &&  cityValue>0 && photoValue!=null ){
+            //console.log('ph='+email,'showerr='+showErrorPhone())
 
+            try{
                 setResponseOk('')
                 setResponseError('')
                 setLoadingAdd(true);
-                const res= await axios.post('http://127.0.0.1:8000/api/ads/store',postData,{
+              const res= await axios.post('http://127.0.0.1:8000/api/ads/store',postData,{
                     headers:{
                         'Content-Type': 'multipart/form-data',
                         'X-Requested-With': 'XMLHttpRequest'
@@ -160,7 +174,7 @@ const Add = () => {
                  <p className="w-fit mx-auto fw-bold fs-2">أضف لافتـــة </p>
                 <div className="input-cont d-flex ">
                     <label htmlFor="title" className="form-label">العنوان</label>
-                    <input type="text"  ref={title} className="form-control" id="title" placeholder="أدخل العنوان"/>
+                    <input type="text"  ref={title} className="form-control title-add" id="title" placeholder="أكتب عنوان اللافتة"/>
                 </div>
                 <small ref={refSmall} className='d-block w-fit mx-auto mb-3' >5 - 40 حرف</small>
 
@@ -214,39 +228,48 @@ const Add = () => {
                     </select>
                 </div>
 
+                <div className="input-cont mb-3 d-flex">
+                        <label htmlFor="phone" className="form-label">تليفون محمول </label>
+                        <input type="text" id='phone' ref={refPhone}  className="form-control phone-add" placeholder='أدخل رقم المحمول' />
+                </div>
+
                 <div className="input-cont mb-3 d-flex ">
                     <label htmlFor="photo" className="form-label">أضف صورة</label>
-                    <input type="file" id='photo' ref={photo} className="form-control"  />
+                    <input type="file" id='photo' ref={photo} className="form-control photo-add"  />
                 </div>
 
                
+
                <div className='social-div py-4 my-5 ps-2 rounded-2'>
                     <p className='w-fit mx-auto fs-4 fw-bold'>حقول اختيارية</p>
-
-                    <div className="input-cont mb-3 d-flex pe-2">
-                        <label htmlFor="phone" className="form-label">تليفون محمول </label>
-                        <input type="text" id='phone' ref={refPhone}  className="form-control"  />
-                    </div>
-
-                    <div className="input-cont mb-3 d-flex pe-2">
+                   
+                    <div className="input-cont d-flex pe-2">
                         <label htmlFor="whats" className="form-label"> واتس اب </label>
-                        <input type="text" id='whats' ref={refWhats} className="form-control" placeholder=' الرقم بالاضافة لرمز الدولة' />
+                        <input type="text" id='whats' ref={refWhats} className="form-control" placeholder=' أدخل رقم واتساب مع رمز الدولة' />
                     </div>
+                    <small className='d-block w-fit mx-auto mb-3' >مثال: 201012345678</small>
 
-                    <div className="input-cont mb-3 d-flex pe-2">
+
+                    <div className="input-cont d-flex pe-2">
                         <label htmlFor="web" className="form-label">موقع الكتروني </label>
-                        <input type="text" id='web' ref={refWeb} className="form-control" placeholder='  يبدأ بـ https://www  أو http://www' />
+                        <input type="text" id='web' ref={refWeb} className="form-control" placeholder='  أدخل رابط موقعك الالكتروني' />
                     </div>
+                    <small className='d-block w-fit mx-auto mb-3' > يبدأ بـ https://www  أو http://www</small>
 
-                    <div className="input-cont mb-3 d-flex pe-2">
+
+                    <div className="input-cont d-flex pe-2">
                         <label htmlFor="email" className="form-label">بريد الكتروني </label>
-                        <input type="text" id='email' ref={refEmail} className="form-control"  />
+                        <input type="text" id='email' ref={refEmail} className="form-control" placeholder='أدخل بريدك الالكتروني' />
                     </div>
+                    <small className='d-block w-fit mx-auto mb-3' >مثال: example@gmail.com</small>
 
-                    <div className="input-cont mb-3 d-flex pe-2">
+
+                    <div className="input-cont d-flex pe-2">
                         <label htmlFor="youtube" className="form-label">قناة يوتيوب  </label>
-                        <input type="text" id='youtube' ref={refYoutube} className="form-control" placeholder='  يبدأ بـ https://www  أو http://www' />
+                        <input type="text" id='youtube' ref={refYoutube} className="form-control" placeholder=' أدخل رابط قناتك على توتيوب' />
                     </div>
+                    <small className='d-block w-fit mx-auto mb-3' > يبدأ بـ https://www  أو http://www</small>
+
                 </div>
 
 

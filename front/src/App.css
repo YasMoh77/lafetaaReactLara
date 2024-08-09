@@ -38,14 +38,7 @@
 }
 */
 
-:root{
-	--mainColor: #ffaa00;
-	--textColor:#0aadad;
-}
-body{
-	direction: rtl;
-	background: #fbfbfba6;
-}
+
 /* classes **/
 .none{display: none;}
 .w-fit{width: fit-content;}
@@ -54,6 +47,15 @@ body{
 .green{ color: green;}
 .yellow{ color: #fbff05;}
 .white{ color: white;}
+
+:root{
+	--mainColor: #ffaa00;
+	--textColor:#0aadad;
+}
+body{
+	direction: rtl;
+	background: #fbfbfba6;
+}
 /**show divs next to navbar */
 .navbar+div{
   margin-top: 20vh;

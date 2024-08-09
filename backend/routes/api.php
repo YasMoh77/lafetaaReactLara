@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\panelController;
 use App\Http\Controllers\apiController;
 use App\Http\Controllers\apiAds;
 use App\Http\Controllers\paypalController;
@@ -10,13 +11,28 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Support\Facades\Crypt;
 
 
+//control panel
+Route::group(['prefix'=>'panel'],function(){
+   //get all ads
+   Route::get('/index', [panelController::class,'index']);
+   //get country name
+   Route::post('/names', [panelController::class,'names']);
+
+});
+
+
+
+
 //show and search 
 Route::group([],function () {
    //get featured ads
     Route::get('home/{key}',[apiController::class,'paidAds']); 
     //add latest ads
     Route::get('/latest',[apiController::class,'latest']); 
+    //search in homepage
     Route::post('search',[apiController::class,'search']); 
+     //search in profile
+    Route::post('searchWord',[apiController::class,'searchWord']); 
     //countries, states and cities
     Route::get('conts',[apiController::class,'conts']);  
     Route::post('states',[apiController::class,'states']); 
@@ -43,14 +59,15 @@ Route::group([],function () {
     //save 
     Route::post('/save',[apiController::class,'saveAd']);
      // check if ad is saved or not
-     Route::post('/checkSaved',[apiController::class,'checkSaved']);
+    Route::post('/checkSaved',[apiController::class,'checkSaved']);
      // get fields
-     Route::post('/fields',[apiController::class,'fields']);
-
-
-
+    Route::post('/fields',[apiController::class,'fields']);
+    // get favourites
+    Route::post('/favourites',[apiController::class,'favourites']);
 
  });
+
+
 
  //ads
  Route::group(['prefix'=>'ads'],function(){
@@ -63,6 +80,7 @@ Route::group([],function () {
     Route::post('update/{id}',[apiAds::class,'update'])->middleware('auth:sanctum'); //update certain user ads
     
  });
+
 
 //get user data on logging 
 Route::get('/user',[apiAds::class,'user'])->middleware(['auth:sanctum']);

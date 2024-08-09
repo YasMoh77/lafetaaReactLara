@@ -14,7 +14,7 @@ const ProfileSigns = () => {
   const email=loginData && loginData.email;
   const token=localStorage.getItem('token');
 
-   const navigate=useNavigate();
+    const navigate=useNavigate();
     const [data, setData] = useState([])
     const [adsNum, setAdsNum] = useState(null)
     const [pageTotal, setPageTotal] = useState(null)
@@ -69,10 +69,6 @@ const ProfileSigns = () => {
     const [tameezFeature, setTameezFeature] = useState('')
     
     
-    useEffect(() => {
-        getAds();
-    }, [])
-
     //get the ads
     const getAds=async()=>{
         //start loading spinner before fetching data
@@ -82,7 +78,6 @@ const ProfileSigns = () => {
         const postData={email,currentPage};
         const res= await http.post(`/ads/user`,postData);
         setData(res.data.ads)
-        
         setAdsNum(res.data.adsNum)
         setPageTotal(res.data.div)
         //end loading spinner after fetching data
@@ -108,8 +103,7 @@ const ProfileSigns = () => {
      setCurrentPage(Page); // Update current page
      setLoadingMore(false);  
      //enable loadMore button
-      refBtnMore.current.disabled=false;
-          
+      refBtnMore.current.disabled=false;      
   }
 
 
@@ -230,6 +224,19 @@ const ProfileSigns = () => {
     //End tameezAd (for making ads pro)
 
      
+    //regex expresiion
+    const reg=/^[0-9]+$/;
+    const showErrorPhone=(phone)=>{
+       if(phone && phone!='' && !reg.test(phone) ){
+          refPhone.current.style.backgroundColor='#e87878';
+          return 1; //wrong phone number
+       }else{
+          refPhone.current.style.backgroundColor='white';
+          return null; //correct phone number
+       }
+   }
+
+
   //submit form for updating
   const submitFormUpdateFunc = async (e) => {
         e.preventDefault();
@@ -241,9 +248,9 @@ const ProfileSigns = () => {
         const title = refTitle.current.value.trim();
         const id = parseInt(refId.current.value, 10);
         const file = refFile.current.files[0];
-        //additional values
         const phoneInput=refPhone.current.value;
-        const phoneUpdate= phoneInput=='' ? 0 : isNaN(parseInt(refPhone.current.value,10))?0:parseInt(refPhone.current.value,10);
+
+        //additional values
         const whatsInput=refWhats.current.value;
         const whats=whatsInput=='' ? 0 : isNaN(parseInt(refWhats.current.value,10))?0:parseInt(refWhats.current.value,10);
         const web=refWeb.current.value;
@@ -251,27 +258,24 @@ const ProfileSigns = () => {
         const youtube=refYoutube.current.value;
 
           //check if form values are valid
-         // showError(title,'',refTitle);
           showErrorTitle(title,refTitle);
-         // showError(file,null,refFile);
-          
+          showErrorPhone(phoneInput);
+
           // Create a FormData object
           const formData = new FormData();
           formData.append('title', title);
           formData.append('file', file);
           formData.append('email', email);
-          formData.append('phone', phoneUpdate);
+          formData.append('phone', phoneInput);
           formData.append('whats', whats);
           formData.append('web', web);
           formData.append('emailSocial', emailSocial);
           formData.append('youtube', youtube);
           formData.append('id',id)
-         // console.log(email,'ti='+title,'ph='+phoneUpdate)
-          if(web==''){console.log('null');}else{console.log('not null');}
-          //check if not all fields are empty
-          if( title!='' && title.length>=5 && title.length<=40  ||  file!=null || phoneUpdate!=0 || whats!=0 || web!='' || emailSocial!='' || youtube!=''){
-          try {
 
+          //check if not all fields are empty
+          if( title!='' && title.length>=5 && title.length<=40  ||  file!=null || phoneInput && showErrorPhone(phoneInput)==null || whats!=0 || web!='' || emailSocial!='' || youtube!=''){
+          try {
             setLoadForm(true);
             const res = await axios.post(`http://127.0.0.1:8000/api/ads/update/${id}`, formData, {
               headers: {
@@ -286,8 +290,8 @@ const ProfileSigns = () => {
             setResponseOk(res.data.message)
             //close overlay and reload
             setTimeout(() => {
-             // stopEditAd();
-             // window.location.reload();
+              stopEditAd();
+              window.location.reload();
             }, 2000);
 
 
@@ -301,6 +305,18 @@ const ProfileSigns = () => {
 
        }
   };
+
+  
+  useEffect(() => {
+      getAds();
+  }, [])
+
+  //get country code for whatsapp
+  const code=(name)=>{
+    if(name==1||name==='مصر'){return '20';} else  if(name==2||name==='السعودية'){return '9660';}
+    else  if(name==3||name==='الكويت'){return '9650';} else  if(name==4||name==='الامارات'){return '9710';}
+    else  if(name==5||name==='قطر'){return '9740';} else  if(name==6||name==='سلطنة عمان'){return '9680';}
+  }
 
 
   /*const getCat=async(cat)=>{
@@ -318,52 +334,57 @@ const ProfileSigns = () => {
     return (
          
          
-        <div className='profData-div py-3 px-2'>
+        <div className='profData-div py-3 px-2' >
                {/* edit images */}
                {imgId && 
              (<div className="overlay edit-overlay">
                  <form  onSubmit={submitFormUpdateFunc} className='edit-form py-3 mt-5 mb-3 px-2 rounded-4' >
                      <img className='mx-auto d-block' src={imgSrc} />
 
-                     <div className='head-edit w-fit mt-4 mx-auto py-2 px-4 w-50 rounded-2 white'><p className='m-0 w-fit mx-auto fs-5 fw-bold'>تحرير لافتة</p></div>
+                     <div className='head-edit w-fit mt-4 mx-auto py-2 px-4 w-50 rounded-2 white'>
+                       <p className='m-0 w-fit mx-auto fs-5 fw-bold'>تحرير لافتة</p>
+                     </div>
+
                      <label  className='d-block mb-2 mt-4' >تعديل العنوان</label>
                      <input id='title' className='d-block mb-2 w-100' ref={refTitle} type='text' placeholder={imgName}   />
                      <small ref={refSmall} className='d-block w-fit mx-auto mb-3' >5 - 40 حرف</small>
+                     
+
+                     <label htmlFor="phone" className="d-block mb-2">تليفون محمول </label>
+                     <input type="text" id='phone' ref={refPhone}  className="d-block mb-4 w-100" placeholder={'0'+optPhone} />
+                     
 
                      <label  className='d-block mb-2' >تغيير الصورة</label>
                      <input type='file' className='d-block mb-5' ref={refFile} />
 
                      {/* optional fields about contacting */}
                      <div className='py-4 my-5 ps-2 '>
-                        <p className='fs-4 fw-bold'>حقول اختيارية</p>
-
-                        <div className="input-cont-pro mb-4 d-flex ">
-                            <label htmlFor="phone" className="form-label">تليفون محمول </label>
-                            <input type="text" id='phone' ref={refPhone}  className="form-control" placeholder={'0'+optPhone} />
-                        </div>
+                        <p className='fs-4 fw-bold'>حقول اختيارية</p>      
 
                         <div className="input-cont-pro d-flex ">
                             <label htmlFor="whats" className="form-label"> واتس اب </label>
-                            <input type="text" id='whats' ref={refWhats} className="form-control" placeholder={countryId+optWhats} />
+                            <input type="text" id='whats' ref={refWhats} className="form-control bg-light" placeholder={countryId+optWhats} />
                         </div>
-                        <small className='w-fit mx-auto mt-0 mb-4 d-block'>رقم بالاضافة لرمز الدولة</small>
+                        <small className='w-fit mx-auto mt-0 mb-4 d-block'>رقم واتساب مع رمز الدولة</small>
 
 
                         <div className="input-cont-pro d-flex ">
                             <label htmlFor="web" className="form-label">موقع الكتروني </label>
-                            <input type="text" id='web' ref={refWeb} className="form-control" placeholder={optWeb} />
+                            <input type="text" id='web' ref={refWeb} className="form-control bg-light" placeholder={optWeb} />
                         </div>
                         <small className='w-fit mx-auto mt-0 mb-4 d-block'> يبدأ بـ https://www  &emsp; أو &emsp; http://www</small>
 
 
-                        <div className="input-cont-pro mb-4 d-flex ">
+                        <div className="input-cont-pro d-flex ">
                             <label htmlFor="email" className="form-label">بريد الكتروني </label>
-                            <input type="text" id='email' ref={refEmail} className="form-control" placeholder={optEmail} />
+                            <input type="text" id='email' ref={refEmail} className="form-control bg-light" placeholder={optEmail} />
                         </div>
+                        <small className='w-fit mx-auto mt-0 mb-4 d-block'> مثال: example@gmail.com</small>
+
 
                         <div className="input-cont-pro d-flex ">
                             <label htmlFor="youtube" className="form-label">قناة يوتيوب  </label>
-                            <input type="text" id='youtube' ref={refYoutube} className="form-control" placeholder={optYoutube} />
+                            <input type="text" id='youtube' ref={refYoutube} className="form-control bg-light" placeholder={optYoutube} />
                         </div>
                         <small className='w-fit mx-auto mt-0 mb-4 d-block'> يبدأ بـ https://www  &emsp; أو &emsp; http://www</small>
 
@@ -373,7 +394,7 @@ const ProfileSigns = () => {
                      <input type='hidden'  ref={refEditFeature} value={editFeature} />
                      
 
-                      {loadForm ? <button  className='btn btn-info w-25 mx-auto d-block'><span className='spinner-border gray d-block m-auto'></span></button> : <button className='btn btn-info w-25 mx-auto d-block'>أرسل</button> }
+                      {loadForm ? <button  className='btn btn-info w-25 mx-auto d-block'><span className='spinner-border gray d-block m-auto'></span></button> : <button className='btn btn-info w-25 mx-auto mb-5 d-block'>أرسل</button> }
                      
                       {/* show form error */}
                      {responseOk &&  <p className='mx-auto mt-3 mb-5 w-fit green' > {responseOk}</p> }
@@ -415,26 +436,26 @@ const ProfileSigns = () => {
                               <li>السعر 150 ج.م.</li>
                             </ul>
                     </div>
-                     <label  className='d-block mb-2 mt-4 fw-bold'> اختر باقة تمييز</label>
-                     <select id='pack' className='d-block mb-4 w-25' ref={refPackage}>
+                    <label  className='d-block mb-2 mt-4 fw-bold'> اختر باقة تمييز</label>
+                    <select id='pack' className='d-block mb-4 w-25' ref={refPackage}>
                        <option value='0'>اختر </option>
                        <option value='1'>ذهبية</option>
                        {tameezFeature && tameezFeature<1 ? <option value='2'>فضية</option> : <option disabled value='2'>فضية</option> }
-                     </select>
+                    </select>
 
-                     <label  className='d-block mb-2 mt-4 fw-bold'> اختر طريقة الدفع </label>
-                     <select id='pay' className='d-block mb-4 w-25' ref={refPay}>
+                    <label  className='d-block mb-2 mt-4 fw-bold'> اختر طريقة الدفع </label>
+                    <select id='pay' className='d-block mb-4 w-25' ref={refPay}>
                        <option value='0'>اختر </option>
                        <option value='1'>فودافون كاش</option>
                        <option value='2'>حوالة بنكية</option>
                        <option value='3'> باي بال</option>
                        <option value='4'> فيزا / ماستر كارد</option>
-                     </select>
+                    </select>
 
-                     <label  className='d-block mb-2 mt-4 fw-bold'>   أدخل رقم تليفونك </label>
-                     <input type='text' ref={refRocketPhone} className='w-25 d-block mb-4' />
+                    <label  className='d-block mb-2 mt-4 fw-bold'>   أدخل رقم تليفونك </label>
+                    <input type='text' ref={refRocketPhone} className='w-25 d-block mb-4' />
                     
-                     <input type='hidden'  ref={refRocketId} value={imgRocketId} />
+                    <input type='hidden'  ref={refRocketId} value={imgRocketId} />
                       {loadForm ? <button  className='btn btn-info w-25 mx-auto d-block'><span className='spinner-border gray d-block m-auto'></span></button> : <button ref={rocketBtn} className='btn btn-info w-25 mx-auto d-block'>أرسل</button> }
                      
                       {/* show form error */}
@@ -458,10 +479,11 @@ const ProfileSigns = () => {
              {enlarge && 
              (<div className="overlay">
                  <img src={enlarge}  alt="k" /> <i onClick={stopEnlargeFun} className="close-btn bi bi-x-square" ></i>
-              </div>)}
+              </div>)
+             }
 
              {/* show ads on the page */}
-            <div className='container-fluid'>
+             <div className='container-fluid'>
                    <p>{adsNum}</p>
                    <div id="show2"  className="d-flex flex-wrap show-wrapper justify-content-between ">
                     {
@@ -471,14 +493,15 @@ const ProfileSigns = () => {
                                      {/*<ShowCat catId={e.CAT_ID} />
                                       <ShowSubcat subId={e.subcat_id} />*/}
                                 <div className='pe-1 my-1'>{e.NAME}</div>                                            
-                                <div className='featured-icons-div d-flex px-1'>
+                                <div className='featured-icons-div d-flex px-1 justify-content-between'>
                                    <div>
                                         {e.phone >0 ? <a href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 
-                                        {e.whatsapp >0 ? <a href={'https://wa.me/'+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a><i class="bi bi-whatsapp empty"></i></a> } 
-                                        {e.website !=null ? <a href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a><i class="bi bi-globe-americas empty"></i></a>} 
-                                        {e.item_email !=null ? <a href='mailto:hgq1100@yahoo.com'><i class="bi bi-envelope-at-fill full-env"></i></a> : <a><i class="bi bi-envelope-at-fill empty"></i></a> } 
-                                        {e.youtube !=null ? <a href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a><i class="bi bi-youtube empty"></i></a> } 
+                                        {e.whatsapp >0 ? <a href={'https://wa.me/'+code(e.country_id)+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a><i class="bi bi-whatsapp empty"></i></a> } 
+                                        {e.website !='' ? <a href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a><i class="bi bi-globe-americas empty"></i></a>} 
+                                        {e.item_email !='' ? <a href={'mailto:'+e.item_email} ><i class="bi bi-envelope-at-fill full-env"></i></a> : <a><i class="bi bi-envelope-at-fill empty"></i></a> } 
+                                        {e.youtube !='' ? <a href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a><i class="bi bi-youtube empty"></i></a> } 
                                     </div>
+                                   {e.approve ==1 ? <i title='معروض' className='bi bi-unlock-fill green'></i> : <i title='في انتظار الموافقة' className='bi bi-lock-fill yellow'></i>} 
                                 </div>
                                             
                                 <div key={e.item_id} title={e.phone} className='d-flex justify-content-around mt-2'>
@@ -495,7 +518,9 @@ const ProfileSigns = () => {
                         )) 
                     }
                    </div>
-                   {data && data.length>0 ?  pageTotal && currentPage<pageTotal ? (<button ref={refBtnMore} onClick={loadMore} className="btn btn-info w-25 mx-auto d-block" id="loadMore">   {loadingMore ? (<span className="spinner-border spinner" role="status" aria-hidden="true"></span>) : (<span>Load more</span>)} </button>) : (<p className="mx-auto w-fit red">نهاية النتائج</p>) : (<span></span>)}
+                   {data && data.length>0 && !loading && pageTotal && currentPage<pageTotal && (<button ref={refBtnMore} onClick={loadMore} className="btn btn-info w-25 mx-auto d-block  loadMoreBtn" id="loadMore">   {loadingMore ? (<span className="spinner-border spinner" role="status" aria-hidden="true"></span>) : (<span className='white'>تحميل المزيد </span>)} </button>) }
+                   {data && data.length>0 && !loading && pageTotal && currentPage>pageTotal && (<p className="mx-auto w-fit red">نهاية النتائج</p>) }
+
             </div>
         </div>
     )

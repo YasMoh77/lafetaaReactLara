@@ -19,3 +19,6 @@
 .social-div{
     background-color: #a7aaab;
 }
+.form-add .form-control{
+    padding: .375rem 1.65rem !important;
+}

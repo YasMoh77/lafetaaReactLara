@@ -24,13 +24,7 @@ class apiAds extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        $ads=Ad::all();
-       return json_encode($ads);
-    }
-
-
+    
     public function user(Request $request)
     {
         if($request->user()->email_verified_at==null){
@@ -41,7 +35,13 @@ class apiAds extends Controller
             ]);
      
          }
-        return $request->user();
+        return response()->json([
+            'name'        => $request->user()->name,
+            'email'       => $request->user()->email,
+            'admin'       => $request->user()->admin
+           ]);
+
+
     }
     
      
@@ -120,8 +120,8 @@ class apiAds extends Controller
             'stateValue' => 'required|integer|not_in:0',
             'cityValue' => 'required|integer|not_in:0',
             'photoValue'=>'required|image|mimes:jpg,jpeg,png|max:500|min:1',
+            'phone'=> ['required', 'numeric'  ],//
             //optional 
-            'phone'=> ['nullable', 'numeric'  ],//
             'whats'=>'nullable|numeric',
             'web'=>'nullable|url:http,https',
             'emailSocial'=>'nullable|email',
@@ -145,7 +145,7 @@ class apiAds extends Controller
         // values ok and validated
         $USERID=User::where('email',$request->email)->value('id');
         $admin=User::where('id',$USERID)->value('admin');
-        $approve=$admin=='ok'?1:0;
+        $approve=$admin !=''?1:0;
 
         $added=new Ad();
         $added->NAME=strip_tags($request->input('titleValue'));
@@ -202,7 +202,7 @@ class apiAds extends Controller
  
     $USERID=User::where('email',$request->email)->value('id');
     $admin=User::where('id',$USERID)->value('admin');
-    $approve=$admin=='ok'?1:2;
+    $approve=$admin !='' ? 1 : 2;
      
     $validate=$request->validate([
         'title' => 'nullable|string|max:40|min:5',
@@ -240,7 +240,7 @@ class apiAds extends Controller
                     // Get old image
                     $oldPhoto = Ad::where('item_id', $request->id)->value('photo');
             
-                    // Delete old image if it exists
+                    // Delete old image if it exists 
                     if ($oldPhoto) {
                         $oldImgPath = 'public/images/' . $oldPhoto;
                         Storage::delete($oldImgPath);

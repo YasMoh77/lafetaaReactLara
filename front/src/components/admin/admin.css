@@ -1,0 +1,36 @@
+
+/* admin  table for all ads*/
+.top-cont{
+    direction: ltr;
+    min-height: 75vh;
+}
+
+.table-ad-parent{
+    margin-bottom: 20vh;
+}
+.table-ad-parent:focus{
+    outline: none !important;
+}
+.table-ad{
+    min-width:170vw;
+}
+.table-ad img{
+    width:10vw;
+    height: 10vh;
+}
+.table-ad td{
+    border: 1px solid #d6e0f9;
+    padding: 1.5vh .5vw;
+}
+::-webkit-scrollbar-track{ 
+    background-color: #f3f2f2;
+}
+::-webkit-scrollbar-thumb{ 
+    background-color: #d2cfcf;
+}
+/** pagination */
+.pagination button{
+    border: 1px solid lightgray;
+    background-color: orange;
+    padding: 1vh 1vw;
+}
