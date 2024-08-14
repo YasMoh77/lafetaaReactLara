@@ -5,7 +5,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import Exports from './components/export/export';
 
 
-const {Nav,About,Faq,Show,Register,Verify,Verified,Login,RequestReset,Forgetpassword,Profile,Add,CPanel,SuccessPay
+const {Nav,About,Faq,Show,Register,Verify,Verified,Login,RequestReset,Forgetpassword,Profile,Add,Dashboard,SuccessPay
   ,SuccessPayExternal,CancelPay,Footer}=Exports;
 
 function App() {
@@ -26,8 +26,9 @@ function App() {
             <Route path="/success-pay"             element={<SuccessPay/>} />
             <Route path="/success-pay-external"    element={<SuccessPayExternal/>} />
             <Route path="/add"                     element={<Add/>} />
-            <Route path="/profile/*"               element={<Profile/>} />
-            <Route path='/c-panel'                 element={<CPanel/>} />
+            <Route path="/dashboard/*"             element={<Dashboard/>} />
+
+            <Route path="/profile/*"              element={<Profile/>} />
 
           </Routes>
         <Footer/>

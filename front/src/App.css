@@ -40,13 +40,16 @@
 
 
 /* classes **/
+.ltr{direction: ltr;}
 .none{display: none;}
 .w-fit{width: fit-content;}
+.hand{cursor: pointer;}
 .red{color: red;} 
 .gray{color: gray;}
 .green{ color: green;}
 .yellow{ color: #fbff05;}
 .white{ color: white;}
+.bg-yellow{background-color: yellow;}
 
 :root{
 	--mainColor: #ffaa00;

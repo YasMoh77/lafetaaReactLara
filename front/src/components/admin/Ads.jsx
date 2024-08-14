@@ -1,25 +1,29 @@
 
 import {useEffect,useState,useRef,useCallback} from 'react'
-import {Link, Routes,Route} from 'react-router-dom'
 import { useNavigate } from 'react-router'
-import {http} from '../axios/axiosGlobal'
+import {http,http4} from '../axios/axiosGlobal'
 import Pagination  from './pagination'
 import axios  from 'axios'
 import { debounce } from 'lodash';
 import   './admin.css'
 
-const CPanel = () => {
+const Ads = ({hideFunc}) => {
+   
+  //receive hideFunc as a prop, load it with hide whose value is 1
+  //to go back to dashboard and hide its contents
+   const hide=1;
+   hideFunc(hide)
+
     //store pagination values
      const [ads, setAds] = useState([])
      const [currentPage, setCurrentPage] = useState(1)
      const [lastPage, setLastPage] = useState(1)
      const [total, setTotal] = useState(1)
-     const [loadingAdmin, setLoadingAdmin] = useState(false)
+     const [loadingAds, setLoadingAds] = useState(false)
            
     //get login data
     const loginData=JSON.parse(localStorage.getItem('loginData'));
     const email=loginData && loginData.email;
-    const token=localStorage.getItem('token');
 
     //search
     const navigate=useNavigate();
@@ -33,7 +37,6 @@ const CPanel = () => {
     const [pageTotal, setPageTotal] = useState(0)
 
     // loadMore
-    //const [currentPage, setCurrentPage] = useState(1)
     const [loadingMore, setLoadingMore] = useState(false)
     const [searchWord, setSearchWord] = useState('')
     const refBtnMore = useRef('')
@@ -59,12 +62,10 @@ const CPanel = () => {
     const refFile = useRef('')
     const refPhone = useRef('')
     const refId = useRef('')
-    const refEditFeature = useRef(0)
     const refAdminCont = useRef()
     const [loadForm, setLoadForm] = useState(false)
     const [responseError, setResponseError] = useState('')
     const [responseOk, setResponseOk] = useState('')
-    const [editFeature, setEditFeature] = useState('')
     //additional values
     const refWhats = useRef('')
     const refEmail = useRef('')
@@ -76,17 +77,17 @@ const CPanel = () => {
     const [imgRocketId, setImgRocketId] = useState('')
     const refPackage = useRef('')
     const refRocketId = useRef('')
-    const refRocketPhone = useRef('')
-    const refPay = useRef('')
     const rocketBtn = useRef('')
     const [responseRocket, setResponseRocket] = useState('')
     const [tameezFeature, setTameezFeature] = useState('')
+
+    //admins
+    
      
     //get all ads on cpanel
-     const getAds=async(page)=>{
-        try {
-            setLoadingAdmin(true)
-         const res=await axios.get('http://127.0.0.1:8000/api/panel/index?page='+page);
+     const getAds=async(page)=>{       
+         setLoadingAds(true)
+         const res=await axios.get('http://127.0.0.1:8000/api/panel/ads?page='+page);
           //console.log(res.data)
           const allAds=res.data.data
           if(allAds.length>0){
@@ -96,8 +97,6 @@ const CPanel = () => {
               const cat=allAds.map(e=>e.CAT_ID)
               const subCat=allAds.map(e=>e.subcat_id)
               const user=allAds.map(e=>e.USER_ID)
-
-
 
               const res2= await http.post('/panel/names',{country,state,city,cat,subCat,user});
               //console.log(res2.data.state)
@@ -124,14 +123,8 @@ const CPanel = () => {
           setCurrentPage(res.data.current_page)
           setLastPage(res.data.last_page)
           setTotal(res.data.total)
-          setLoadingAdmin(false)
-        } catch (error) {
-            if (error.response && error.response.status === 429) {
-                console.error('Too many requests. Please try again later.');
-            } else {
-                console.error('Error fetching ads:', error);
-            }
-        }
+          setLoadingAds(false)
+        
      }
 
 
@@ -174,7 +167,6 @@ const CPanel = () => {
     setImgId(id)
     setImgName(NAME)
     setImgSrc(src)
-    console.log(id,NAME,src)
     //api  call
     const res=await http.post('/fields',{id});
     setOptPhone(res.data.phone ? res.data.phone : '')
@@ -195,15 +187,14 @@ const CPanel = () => {
 
     //start tameezAd (for making ads pro)
     const tameezAd=(id,NAME,src,feature)=>{
-
         setTameezFeature(feature)
         setImgRocketId(id)
         setImgName(NAME)
         setImgSrc(src)
         document.querySelector('body').style.overflow='hidden';
         refAdminCont.current.style.direction='rtl' //change page direction to rtl
-
      }
+
      //hide ad after making pro (tameez)
      const stopTameezAd=()=>{
       setImgRocketId('')
@@ -213,11 +204,6 @@ const CPanel = () => {
        refAdminCont.current.style.direction='ltr'
     }
 
-
-    //show form error
-    const showError=(field,value,ref)=>{
-        if(field==value){ref.current.style.backgroundColor='#e87878';}else{ref.current.style.backgroundColor='white';}
-      }
   
       //show error if title <5 or >40
       const showErrorTitle=(field,ref)=>{
@@ -238,49 +224,33 @@ const CPanel = () => {
 
         //values
        const plan=parseInt(refPackage.current.value,10);//gold or silver
-       const pay = parseInt(refPay.current.value, 10);//vodafone, bank ...etc
        const id = parseInt(refRocketId.current.value, 10);//item_id
-       const phone = refRocketPhone.current.value.trim();//user phone
 
        //check if empty
        showErrorSelect(plan,'0',refPackage);
-       showErrorSelect(pay,'0',refPay);
-       showError(phone,'',refRocketPhone);
       
        //if not empty go ahead
-       if(plan!='' && pay!='' && id!='' && phone!=''  ){
+       if(plan!=''  && id!=''   ){
+          const adminChange=1;
            //send data
-           const res=await http.post('/package',{plan,pay,id,phone});
-           if(res.data.message ){
+           const res=await http.post('/package',{plan,id,adminChange});
+           if(res.data.notice==='success'){
                  //something wrong
+                 setResponseRocket('<p class=" green">' +res.data.message+'</p>')
+                 alert(res.data.message)
+           }else{
                  setResponseRocket('<p class=" red">' +res.data.message+'</p>')
-                 setLoadForm(false)
+                 alert(res.data.message)
+           }
+           setLoadForm(false)   
+           window.location.reload()      
 
-              //proceed to pay
-           }else if(res.data.success){
-                 setResponseRocket('<i class="bi bi-check-circle-fill fs-2 green"></i>')
-                 localStorage.setItem('tameez',JSON.stringify(res.data))
-                   if(res.data.tameezPay=='vodafone' || res.data.tameezPay=='bank'){
-                       setLoadForm(false)
-                       navigate('/success-pay')
-                       window.location.reload()
-                   }
-             }else if(res.data.redirectPaypal){
-               //redirect to paypal without axios to avoid cors.php restrictions
-               const price=res.data.price;
-                window.location.href=`http://127.0.0.1:8000/api/paypalPayment/${plan}/${price}/${id}/${phone}`;
-              
-                //redirect to pay by visa
-             }else if(res.data.redirectVisa){
-               setResponseRocket('<p>visa</p>')
-               setLoadForm(false)
-             }
        }else{
           setLoadForm(false)
           rocketBtn.current.disabled=false;
        }         
     }
-    //End tameezAd (for making ads pro)
+    //End tameezAd (making ads pro)
 
 
       //regex expresiion
@@ -337,13 +307,7 @@ const CPanel = () => {
       if( title!='' && title.length>=5 && title.length<=40  ||  file!=null || phoneInput && showErrorPhone(phoneInput)==null || whats!=0 || web!='' || emailSocial!='' || youtube!=''){
       try {
         setLoadForm(true);
-        const res = await axios.post(`http://127.0.0.1:8000/api/ads/update/${id}`, formData, {
-          headers: {
-              'Content-Type': 'multipart/form-data',
-              'X-Requested-With': 'XMLHttpRequest',
-              Authorization:'Bearer '+token
-          },
-        });
+        const res = await axios.post(`http://127.0.0.1:8000/api/ads/update/${id}`, formData);
         
         // Return to normal
         setLoadForm(false);
@@ -367,18 +331,64 @@ const CPanel = () => {
  };
 
 
-     //get country code for whatsapp
-     const code=(name)=>{
-        if(name==1||name==='مصر'){return '20';} else  if(name==2||name==='السعودية'){return '9660';}
-        else  if(name==3||name==='الكويت'){return '9650';} else  if(name==4||name==='الامارات'){return '9710';}
-        else  if(name==5||name==='قطر'){return '9740';} else  if(name==6||name==='سلطنة عمان'){return '9680';}
+    //get country code for whatsapp
+    const code=(name)=>{
+      if(name==1||name==='مصر'){return '20';} else  if(name==2||name==='السعودية'){return '9660';}
+      else  if(name==3||name==='الكويت'){return '9650';} else  if(name==4||name==='الامارات'){return '9710';}
+      else  if(name==5||name==='قطر'){return '9740';} else  if(name==6||name==='سلطنة عمان'){return '9680';}
+    }
+
+
+     //delete ads
+    const deleteItem=async(id)=>{
+      //confirm delete
+      const confirmed= window.confirm('Do you want to delete this ad?');
+      //send id to backend
+      if(confirmed){
+         const res=await http4.post(`ads/delete/${id}`);
+         alert(res.data.message)
+         window.location.reload()
       }
+    }
+  
+
+  //mark row
+  const markRow=(ee)=>{
+    if( ee.parentElement.style.backgroundColor=='orange'){
+        ee.parentElement.style.backgroundColor='white';
+    }else{ ee.parentElement.style.backgroundColor='orange' }
+  }
+
+  //when clicking on approve, approve ads
+  const approveFunc=async(id)=>{
+     //confirm delete
+     const confirmed= window.confirm('Approve this ad?');
+     if(confirmed){
+        const res=await http.post('panel/approve',{id});
+        alert(res.data.message)
+        window.location.reload()
+      }
+  }
+
+  const returnPendingFunc=async(id)=>{
+      //confirm delete
+      const confirmed= window.confirm('Return this ad to pending?');
+      if(confirmed){
+         const res=await http.post('/panel/return-pending',{id});
+         alert(res.data.message)
+         window.location.reload()
+       }
+  }
+
+
+  useEffect(() => {
+    !loginData || loginData && loginData.admin==='' && navigate('/');
+  }, [])
 
 
      
     return (
         <div className='container-fluid top-cont' ref={refAdminCont}>
-            <p>All ads ({total})</p>
 
             {/* making ads pro (tameez) */}
             {imgRocketId && 
@@ -406,21 +416,10 @@ const CPanel = () => {
                     <label  className='d-block mb-2 mt-4 fw-bold'> اختر باقة تمييز</label>
                     <select id='pack' className='d-block mb-4 w-25' ref={refPackage}>
                        <option value='0'>اختر </option>
-                       <option value='1'>ذهبية</option>
-                       {tameezFeature && tameezFeature<1 ? <option value='2'>فضية</option> : <option disabled value='2'>فضية</option> }
-                    </select>
-
-                    <label  className='d-block mb-2 mt-4 fw-bold'> اختر طريقة الدفع </label>
-                    <select id='pay' className='d-block mb-4 w-25' ref={refPay}>
-                       <option value='0'>اختر </option>
-                       <option value='1'>فودافون كاش</option>
-                       <option value='2'>حوالة بنكية</option>
-                       <option value='3'> باي بال</option>
-                       <option value='4'> فيزا / ماستر كارد</option>
-                    </select>
-
-                    <label  className='d-block mb-2 mt-4 fw-bold'>   أدخل رقم تليفونك </label>
-                    <input type='text' ref={refRocketPhone} className='w-25 d-block mb-4' />
+                       {tameezFeature==2 ? <option disabled value='1'>ذهبية</option> : <option  value='1'>ذهبية</option>}
+                       {tameezFeature==1 ? <option disabled value='2'>فضية</option> : <option  value='2'>فضية</option> }
+                       <option value='13'>الغاء تمييز واعادة الى الأصل</option>
+                    </select> 
                     
                     <input type='hidden'  ref={refRocketId} value={imgRocketId} />
                       {loadForm ? <button  className='btn btn-info w-25 mx-auto d-block'><span className='spinner-border gray d-block m-auto'></span></button> : <button ref={rocketBtn} className='btn btn-info w-25 mx-auto d-block'>أرسل</button> }
@@ -498,14 +497,10 @@ const CPanel = () => {
                             <input type="text" id='youtube' ref={refYoutube} className="form-control bg-light" placeholder={optYoutube} />
                         </div>
                         <small className='w-fit mx-auto mt-0 mb-4 d-block'> يبدأ بـ https://www  &emsp; أو &emsp; http://www</small>
-
                      </div>
 
-                     <input type='hidden'  ref={refId} value={imgId} />
-                     <input type='hidden'  ref={refEditFeature} value={editFeature} />
-                     
-
-                      {loadForm ? <button  className='btn btn-info w-25 mx-auto d-block'><span className='spinner-border gray d-block m-auto'></span></button> : <button className='btn btn-info w-25 mx-auto mb-5 d-block'>أرسل</button> }
+                     <input type='hidden'  ref={refId} value={imgId} />                
+                     {loadForm ? <button  className='btn btn-info w-25 mx-auto d-block'><span className='spinner-border gray d-block m-auto'></span></button> : <button className='btn btn-info w-25 mx-auto mb-5 d-block'>أرسل</button> }
                      
                       {/* show form error */}
                      {responseOk &&  <p className='mx-auto mt-3 mb-5 w-fit green' > {responseOk}</p> }
@@ -523,7 +518,10 @@ const CPanel = () => {
               </div>)}
 
 
-            {loadingAdmin ? (<p className='spinner-border gray mx-auto mt-5 d-block'></p>) : (
+            {loadingAds ? (<p className='spinner-border gray mx-auto mt-5 d-block'></p>) 
+            : ads && ads.length>0 && (
+            <>
+            <p>All ads ({total})</p>
             <div className='overflow-auto w-100 pb-5 table-ad-parent' >
                 <table className='mb-5 table-ad' >                   
                    <thead className='bg-info fw-bold'>
@@ -545,13 +543,15 @@ const CPanel = () => {
                             <td>Feature</td>
                             <td>Plan until</td>
                             <td>user</td> 
-                            <td>Action</td>                       
+                            {loginData.admin ==='sup'||loginData.admin ==='own' &&  //only super admin or owner can do actions
+                            <td>Action</td> 
+                            }                      
                         </tr>
                     </thead>
 
                     <tbody>
-                       { ads && ads.length>0 && ads.map((e)=>(
-                        <tr key={e.item_id} >
+                       {  ads.map((e)=>(
+                        <tr key={e.item_id}  onClick={(ee)=>{markRow(ee.target);}}  >
                             <td>{e.item_id}</td>
                             <td><img onClick={()=>{enlargeFun(baseURLImg+e.photo)}} src={baseURLImg+e.photo} /></td>
                             <td>{e.NAME}</td>
@@ -565,19 +565,22 @@ const CPanel = () => {
                             <td>{e.website}</td>
                             <td>{e.item_email}</td>
                             <td>{e.youtube}</td>
-                            <td>{e.approve==1?<span className="green">shown</span>:e.approve==0?<span className="red">pending-new</span>:<span className="yellow">pending-modify</span>}</td>
+                            <td>{e.approve==1? <><span className="green">shown</span><i title='return to Pending' className='bi bi-arrow-return-left hand ms-2' onClick={()=>{returnPendingFunc(e.item_id)}}></i></> :e.approve==0 ? <><span  className="red me-3">pending-new</span><span className='hand text-decoration-underline text-info' onClick={()=>{approveFunc(e.item_id)}}>Approve</span></> : <><span className="text-warning me-3">pending-modify</span><span className='hand text-decoration-underline text-info' onClick={()=>{approveFunc(e.item_id)}}>Approve  </span></>}</td>
                             <td>{e.feature==2?'Gold':e.feature==1?'Silver':''}</td>
                             <td>{e.plan_until}</td>
                             <td>{e.userName}</td>
-                            <td>
-                                <i title='Edit' className='bi bi-wrench me-5 p-1 bg-info text-light' onClick={()=>{editAd(e.item_id,e.NAME,baseURLImg+e.photo)}} ></i>                      
+                            
+                            {loginData.admin ==='sup'||loginData.admin ==='own' && // action ONLY allowed for super admins
+                            (<td>
+                                <i title='تحرير' className='bi bi-wrench me-5 p-1 bg-info text-light' onClick={()=>{editAd(e.item_id,e.NAME,baseURLImg+e.photo)}} ></i>                      
                                 {/* promote and display according to plan*/}
-                                {e.feature==2 && <i title='باقة ذهبية'    className="bi bi-rocket-takeoff-fill p-1 bg-success text-light me-5"></i>}
-                                {e.feature==1 && <i title='باقة فضية'  onClick={()=>{ tameezAd(e.item_id,e.NAME,baseURLImg+e.photo,e.feature)  }}  className="bi bi-rocket-takeoff-fill yellow me-5"></i>}
+                                {e.feature==2 && <i title='باقة ذهبية'  onClick={()=>{ tameezAd(e.item_id,e.NAME,baseURLImg+e.photo,e.feature)  }}  className="bi bi-rocket-takeoff-fill p-1 bg-success text-light me-5"></i>}
+                                {e.feature==1 && <i title='باقة فضية'  onClick={()=>{ tameezAd(e.item_id,e.NAME,baseURLImg+e.photo,e.feature)  }}  className="bi bi-rocket-takeoff-fill me-5 bg-yellow text-light p-1 "></i>}
                                 {e.feature==0 && <i title='تمييز'  onClick={()=>{ tameezAd(e.item_id,e.NAME,baseURLImg+e.photo,e.feature)  }}  className="bi bi-rocket-takeoff me-5 bg-secondary text-light p-1"></i>}
                                 {/* delete ad*/}
-                                <i title='حذف' className='bi bi-trash bg-danger text-light p-1'></i>
-                            </td> 
+                                <i title='حذف' onClick={()=>{deleteItem(e.item_id)}} className='bi bi-trash bg-danger text-light p-1'></i>
+                            </td>)}
+                                                                               
                         </tr>
                        ))}
                     </tbody>                 
@@ -586,12 +589,13 @@ const CPanel = () => {
                 {<Pagination currentPage={currentPage} lastPage={lastPage} changePageFunc={changePageFunc} />}
               
             </div>
+            </>
             ) }
            
         </div>
     )
 }
 
-export default CPanel
+export default Ads
 
 

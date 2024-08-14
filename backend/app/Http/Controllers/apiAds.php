@@ -40,10 +40,9 @@ class apiAds extends Controller
             'email'       => $request->user()->email,
             'admin'       => $request->user()->admin
            ]);
-
-
     }
     
+
      
      // display ads by a certain user
      
@@ -277,7 +276,15 @@ class apiAds extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
-    {
-        //
+    {   
+        $found=Ad::where('item_id',$id)->first();
+        if($found){
+            Ad::where('item_id',$id)->delete();
+            return response()->json(['message'=>'Item deleted successfully',]);
+        }
+        return response()->json(['message'=>'Item not found',]);
+
     }
+
+    
 }

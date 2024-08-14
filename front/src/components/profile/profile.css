@@ -1,5 +1,7 @@
-/* classes */
-
+/* profile */
+.profile-cont{
+    min-height: 135vh;
+}
 .prof-head{
     margin-right: .2vw !important;
 }

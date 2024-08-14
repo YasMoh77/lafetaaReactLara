@@ -9,18 +9,40 @@ use App\Http\Controllers\paypalController;
 //use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Support\Facades\Crypt;
+use Carbon\Carbon;
+
+
 
 
 //control panel
 Route::group(['prefix'=>'panel'],function(){
+   //count on dashboard
+   Route::post('/count-dashboard', [panelController::class,'countDashboard']);
    //get all ads
-   Route::get('/index', [panelController::class,'index']);
-   //get country name
+   Route::get('/ads', [panelController::class,'ads']);
+   //approve ad
+   Route::post('/approve', [panelController::class,'approve']);
+   //approve ad
+   Route::post('/return-pending', [panelController::class,'returnPending']);
+   //feature-ad
+   Route::post('/feature-ad', [panelController::class,'featureAd']);
+   //get users
+   Route::get('/users', [panelController::class,'users']);
+   //block users
+   Route::post('/block', [panelController::class,'block']);
+   //change admin
+   Route::post('/change-admin', [panelController::class,'changeAdmin']);
+   //delete user
+   Route::post('delete/{id}',[panelController::class,'destroy']); //delete certain user 
+   //get country,state,city,cat and subcat names
    Route::post('/names', [panelController::class,'names']);
+   //get plan requests
+   Route::get('/plans', [panelController::class,'plans']);
+   //get plan requests
+   Route::post('delete-plan/{id}', [panelController::class,'destroyPlan']);
+
 
 });
-
-
 
 
 //show and search 
@@ -77,13 +99,15 @@ Route::group([],function () {
     Route::get('/cat/{cat}',[apiAds::class,'getCat']);
     Route::get('/sub/{sub}',[apiAds::class,'getSub']);
     //update ads
-    Route::post('update/{id}',[apiAds::class,'update'])->middleware('auth:sanctum'); //update certain user ads
+    Route::post('update/{id}',[apiAds::class,'update']); //update certain user ads
+    //delete ads
+    Route::post('delete/{id}',[apiAds::class,'destroy']); //delete certain user ads
     
  });
 
 
 //get user data on logging 
-Route::get('/user',[apiAds::class,'user'])->middleware(['auth:sanctum']);
+Route::get('/user',[apiAds::class,'user'])->middleware(['auth:sanctum']); 
 
 /*pay pal*/
 Route::get('paypalPayment/{plan}/{price}/{id}/{phone}',[paypalController::class,'paypalPayment'])->name('paypalPayment');
@@ -91,9 +115,9 @@ Route::get('paypalSuccess', [paypalController::class,'paypalSuccess'])->name('pa
 Route::get('paypalCancel', [paypalController::class,'paypalCancel'])->name('paypalCancel');
 
 Route::get('do',function(){
-  $a='cancel';
-  echo $a.'<br>';
- $crypt= Crypt::encrypt($a);
-  echo $crypt.'<br>';
+    $now=Carbon::now();
+
+  echo $now.'<br>';
+ 
 
 });

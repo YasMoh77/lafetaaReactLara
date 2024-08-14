@@ -1,24 +1,22 @@
 
-/* admin  table for all ads*/
-.top-cont{
-    direction: ltr;
-    min-height: 75vh;
-}
-
-.table-ad-parent{
+/* admin  table for all ads and users */
+.table-ad-parent,.table-user-parent{
     margin-bottom: 20vh;
 }
-.table-ad-parent:focus{
+.table-ad-parent:focus,.table-user-parent:focus{
     outline: none !important;
 }
 .table-ad{
-    min-width:170vw;
+    min-width:215vw;
 }
 .table-ad img{
     width:10vw;
     height: 10vh;
 }
-.table-ad td{
+.table-user{
+    min-width: 150vw;
+}
+.table-ad td,.table-user td{
     border: 1px solid #d6e0f9;
     padding: 1.5vh .5vw;
 }
@@ -28,9 +26,23 @@
 ::-webkit-scrollbar-thumb{ 
     background-color: #d2cfcf;
 }
+
 /** pagination */
 .pagination button{
     border: 1px solid lightgray;
     background-color: orange;
     padding: 1vh 1vw;
+}
+
+/** dashboard */
+.child-one-dash{
+    max-height: 65vh;
+}
+.child-two-dash{
+    min-height: 50vh;
+}
+@media (min-width: 768px) {
+    .child-one-dash{width: 17.5%;}
+    .child-two-dash{width:80%}
+    .child-two-dash .show{width: 24%;}
 }

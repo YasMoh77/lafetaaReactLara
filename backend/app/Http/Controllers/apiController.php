@@ -174,107 +174,125 @@ class apiController extends Controller
 
     //choose package
     public function package(Request $request)
-    {
-        $adDetail= Ad::where('item_id',$request->id)->first();
-        $name=$adDetail->NAME;
-        $feature=$adDetail->feature;
+    {   
+        if($request->adminChange){ //change comes from admin panel
+            $request->plan==1? $featured='Featured successfully to Gold' : ($request->plan==2 ? $featured='Featured successfully to Silver' : $featured='Plans cancelled');
+            $found=Ad::where('item_id',$request->id)->first();
 
-        //get name of category
-        if($adDetail->CAT_ID==1){$cat='activities';}elseif($adDetail->CAT_ID==2){$cat='jobs';}
-        elseif($adDetail->CAT_ID==3){$cat='products & services';} elseif($adDetail->CAT_ID==4){$cat='occasions';}
-        elseif($adDetail->CAT_ID==5){$cat='wanted';} elseif($adDetail->CAT_ID==6){$cat='lost';}
-        
-        //status
-        if($adDetail->approve==1){$status='shown';} else{$status='pending';}
-        //chosenPlan
-        $chosenPlan=$request->plan==1 ? 'GOLD' : 'SILVER';
-        //user name
-        $userName=User::where('id',$adDetail->USER_ID)->value('name');
-        //pay method
-        if($request->pay==1){$pay_method='vodafone';} elseif($request->pay==2){$pay_method='bank';}
-        //price
-        $price=$request->plan==1 && $feature==0 ? 300 : ($request->plan==1 && $feature==1 ? 150 : 150);
-        // check if ad has roq in plan table
-        $foundPlan= Plan::where('item_id',$request->id)->first();
-        //sterilize phone field
-        $phone=strip_tags($request->input('phone'));
-        //prepare to insert
-        $planTable=new Plan();
-        //now
-        $now=Carbon::now();
-
-
-       //there's already a request to promote ad 
-       if($foundPlan){ 
-            return response()->json(['message'=>'تم تقديم طلب تمييز من قبل']);
-           
-       }else{  // no request made
-
-              if($feature==0){ //ad has no plan
-                    if($request->pay==1){ //vodafone cash
-                        //insert in plan table
-                        $planTable->item_id=$request->id;  $planTable->ad_cat=$cat;
-                        $planTable->ad_title=$adDetail->NAME; $planTable->ad_date=$adDetail->item_date;
-                        $planTable->ad_status=$status; $planTable->ad_chosenplan=$chosenPlan;
-                        $planTable->ad_username=$userName; $planTable->ad_userphone=$phone;
-                        $planTable->pay_method=$pay_method;  $planTable->order_date=$now;
-                        $planTable->save();
-                       // insertPlan($request->id,$cat,$adDetail,$status,$chosenPlan,$userName,$phone,$pay_method);
-                        return response()->json(['success'=>'success', 'tameezPay' =>'vodafone', 'tameezPlan' =>$request->plan, 'tameezPhone' => $phone, 'tameezName'=>$name, 'tameezPrice'=>$price ]);
-                        
-                    }elseif($request->pay==2){ //bank transfer
-                        //insert in plan table
-                        $planTable->item_id=$request->id;  $planTable->ad_cat=$cat;
-                        $planTable->ad_title=$adDetail->NAME; $planTable->ad_date=$adDetail->item_date;
-                        $planTable->ad_status=$status; $planTable->ad_chosenplan=$chosenPlan;
-                        $planTable->ad_username=$userName; $planTable->ad_userphone=$phone;
-                        $planTable->pay_method=$pay_method;  $planTable->order_date=$now;
-                        $planTable->save();
-                        return response()->json(['success'=>'success', 'tameezPay' =>'bank', 'tameezPlan' =>$request->plan, 'tameezPhone' => $phone, 'tameezName'=>$name, 'tameezPrice'=>$price ]);
-                
-                    }elseif($request->pay==3){ //pay pal
-                        return response()->json(['redirectPaypal' =>'redirectPaypal', 'price'=>$price ]);
-
-                    }elseif($request->pay==4){ //visa 
-                        return response()->json(['redirectVisa' =>'redirectVisa' ]);                
+            if($found){          
+                    if($request->plan==1){//make gold
+                        Ad::where('item_id',$request->id)->update(['gold'=>1,'silver'=>0,'feature'=>2]);
+                    }elseif($request->plan==2){ //make silver
+                        Ad::where('item_id',$request->id)->update(['gold'=>0,'silver'=>1,'feature'=>1]);
+                    }else{ //cancel plans
+                         Ad::where('item_id',$request->id)->update(['gold'=>0,'silver'=>0,'feature'=>0]);
                     }
+                    return response()->json(['notice'=>'success','message'=>$featured]);
+              }else{return response()->json(['notice'=>'fail','message'=>'SORRY, Item NOT found']);}
 
-            }elseif($feature==1 && $request->plan==2){ //feature==1 means silver plan, $request->plan==2 means silver plan
-                return response()->json(['message'=>'مميز بالفعل بالباقة الفضية']);
-           
-            }elseif($feature==1 && $request->plan==1){ //feature==1 means silver plan, $request->plan==1 means gold plan(with silver plan but wants gold plan)
-                    //  /
-                    if($request->pay==1){ //vodafone cash
-                        //insert in plan table
-                        $planTable->item_id=$request->id;  $planTable->ad_cat=$cat;
-                        $planTable->ad_title=$adDetail->NAME; $planTable->ad_date=$adDetail->item_date;
-                        $planTable->ad_status=$status; $planTable->ad_chosenplan=$chosenPlan;
-                        $planTable->ad_username=$userName; $planTable->ad_userphone=$phone;
-                        $planTable->pay_method=$pay_method;  $planTable->order_date=$now;
-                        $planTable->save();
-                        return response()->json(['success'=>'success', 'tameezPay' =>'vodafone', 'tameezPlan' =>$request->plan, 'tameezPhone' => $phone, 'tameezName'=>$name, 'tameezPrice'=>$price ]);
-                        
-                    }elseif($request->pay==2){ //bank transfer
-                        //insert in plan table
-                        $planTable->item_id=$request->id;  $planTable->ad_cat=$cat;
-                        $planTable->ad_title=$adDetail->NAME; $planTable->ad_date=$adDetail->item_date;
-                        $planTable->ad_status=$status; $planTable->ad_chosenplan=$chosenPlan;
-                        $planTable->ad_username=$userName; $planTable->ad_userphone=$phone;
-                        $planTable->pay_method=$pay_method;  $planTable->order_date=$now;
-                        $planTable->save();
-                        return response()->json(['success'=>'success', 'tameezPay' =>'bank', 'tameezPlan' =>$request->plan, 'tameezPhone' => $phone, 'tameezName'=>$name, 'tameezPrice'=>$price ]);
-                
-                    }elseif($request->pay==3){ //pay pal
-                        return response()->json(['redirectPaypal' =>'redirectPaypal', 'price'=>$price  ]);
+        }else{
+            $adDetail= Ad::where('item_id',$request->id)->first();
+            $name=$adDetail->NAME;
+            $feature=$adDetail->feature;
 
-                    }elseif($request->pay==4){ //visa 
-                        return response()->json(['redirectVisa' =>'redirectVisa' ]);                
-                    }
-           
-            }elseif($feature==2 && $request->plan==1 || $feature==2 && $request->plan==2){ //feature==1 means silver plan, $request->plan==2 means silver plan
-                return response()->json(['message'=>'مميز بالفعل بالباقة الذهبية']);
+            //get name of category
+            if($adDetail->CAT_ID==1){$cat='activities';}elseif($adDetail->CAT_ID==2){$cat='jobs';}
+            elseif($adDetail->CAT_ID==3){$cat='products & services';} elseif($adDetail->CAT_ID==4){$cat='occasions';}
+            elseif($adDetail->CAT_ID==5){$cat='wanted';} elseif($adDetail->CAT_ID==6){$cat='lost';}
+            
+            //status
+            if($adDetail->approve==1){$status='shown';} else{$status='pending';}
+            //chosenPlan
+            $chosenPlan=$request->plan==1 ? 'GOLD' : 'SILVER';
+            //user name
+            $userName=User::where('id',$adDetail->USER_ID)->value('name');
+            //pay method
+            if($request->pay==1){$pay_method='vodafone';} elseif($request->pay==2){$pay_method='bank';}
+            //price
+            $price=$request->plan==1 && $feature==0 ? 300 : ($request->plan==1 && $feature==1 ? 150 : 150);
+            // check if ad has roq in plan table
+            $foundPlan= Plan::where('item_id',$request->id)->first();
+            //sterilize phone field
+            $phone=strip_tags($request->input('phone'));
+            //prepare to insert
+            $planTable=new Plan();
+            //now
+            $now=Carbon::now();
+
+
+          //there's already a request to promote ad 
+         if($foundPlan){ 
+                return response()->json(['message'=>'تم تقديم طلب تمييز من قبل']);
+            
+         }else{  // no request made
+
+                if($feature==0){ //ad has no plan
+                        if($request->pay==1){ //vodafone cash
+                            //insert in plan table
+                            $planTable->item_id=$request->id;  $planTable->ad_cat=$cat;
+                            $planTable->ad_title=$adDetail->NAME; $planTable->ad_date=$adDetail->item_date;
+                            $planTable->ad_status=$status; $planTable->ad_chosenplan=$chosenPlan;
+                            $planTable->ad_username=$userName; $planTable->ad_userphone=$phone;
+                            $planTable->pay_method=$pay_method;  $planTable->order_date=$now;
+                            $planTable->save();
+                        // insertPlan($request->id,$cat,$adDetail,$status,$chosenPlan,$userName,$phone,$pay_method);
+                            return response()->json(['success'=>'success', 'tameezPay' =>'vodafone', 'tameezPlan' =>$request->plan, 'tameezPhone' => $phone, 'tameezName'=>$name, 'tameezPrice'=>$price ]);
+                            
+                        }elseif($request->pay==2){ //bank transfer
+                            //insert in plan table
+                            $planTable->item_id=$request->id;  $planTable->ad_cat=$cat;
+                            $planTable->ad_title=$adDetail->NAME; $planTable->ad_date=$adDetail->item_date;
+                            $planTable->ad_status=$status; $planTable->ad_chosenplan=$chosenPlan;
+                            $planTable->ad_username=$userName; $planTable->ad_userphone=$phone;
+                            $planTable->pay_method=$pay_method;  $planTable->order_date=$now;
+                            $planTable->save();
+                            return response()->json(['success'=>'success', 'tameezPay' =>'bank', 'tameezPlan' =>$request->plan, 'tameezPhone' => $phone, 'tameezName'=>$name, 'tameezPrice'=>$price ]);
+                    
+                        }elseif($request->pay==3){ //pay pal
+                            return response()->json(['redirectPaypal' =>'redirectPaypal', 'price'=>$price ]);
+
+                        }elseif($request->pay==4){ //visa 
+                            return response()->json(['redirectVisa' =>'redirectVisa' ]);                
+                        }
+
+                }elseif($feature==1 && $request->plan==2){ //feature==1 means silver plan, $request->plan==2 means silver plan
+                    return response()->json(['message'=>'مميز بالفعل بالباقة الفضية']);
+            
+                }elseif($feature==1 && $request->plan==1){ //feature==1 means silver plan, $request->plan==1 means gold plan(with silver plan but wants gold plan)
+                        //  /
+                        if($request->pay==1){ //vodafone cash
+                            //insert in plan table
+                            $planTable->item_id=$request->id;  $planTable->ad_cat=$cat;
+                            $planTable->ad_title=$adDetail->NAME; $planTable->ad_date=$adDetail->item_date;
+                            $planTable->ad_status=$status; $planTable->ad_chosenplan=$chosenPlan;
+                            $planTable->ad_username=$userName; $planTable->ad_userphone=$phone;
+                            $planTable->pay_method=$pay_method;  $planTable->order_date=$now;
+                            $planTable->save();
+                            return response()->json(['success'=>'success', 'tameezPay' =>'vodafone', 'tameezPlan' =>$request->plan, 'tameezPhone' => $phone, 'tameezName'=>$name, 'tameezPrice'=>$price ]);
+                            
+                        }elseif($request->pay==2){ //bank transfer
+                            //insert in plan table
+                            $planTable->item_id=$request->id;  $planTable->ad_cat=$cat;
+                            $planTable->ad_title=$adDetail->NAME; $planTable->ad_date=$adDetail->item_date;
+                            $planTable->ad_status=$status; $planTable->ad_chosenplan=$chosenPlan;
+                            $planTable->ad_username=$userName; $planTable->ad_userphone=$phone;
+                            $planTable->pay_method=$pay_method;  $planTable->order_date=$now;
+                            $planTable->save();
+                            return response()->json(['success'=>'success', 'tameezPay' =>'bank', 'tameezPlan' =>$request->plan, 'tameezPhone' => $phone, 'tameezName'=>$name, 'tameezPrice'=>$price ]);
+                    
+                        }elseif($request->pay==3){ //pay pal
+                            return response()->json(['redirectPaypal' =>'redirectPaypal', 'price'=>$price  ]);
+
+                        }elseif($request->pay==4){ //visa 
+                            return response()->json(['redirectVisa' =>'redirectVisa' ]);                
+                        }
+            
+                }elseif($feature==2 && $request->plan==1 || $feature==2 && $request->plan==2){ //feature==1 means silver plan, $request->plan==2 means silver plan
+                    return response()->json(['message'=>'مميز بالفعل بالباقة الذهبية']);
+                }
             }
-        }
+
+        }//end if
 
     }
 

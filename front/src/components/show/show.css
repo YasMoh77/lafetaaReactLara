@@ -4,7 +4,7 @@
 .w-fit{width: fit-content;}
 .top-container{
 	margin: 22vh auto 5vh;
-	min-height: 60vh;
+	min-height: 135vh;
 }
 .paid,.free{
    color: var(--textColor);

@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router'
 import ProfileData from './profileData'
 import ProfileSigns from './profileSigns'
 import ProfileFavourite from './ProfileFavourite'
-import CPanel from '../admin/CPanel'
+import Dashboard from '../admin/dashboard'
+import CPanel from '../admin/Ads'
 import {http} from '../axios/axiosGlobal'
 import './profile.css'
 
@@ -15,8 +16,6 @@ const Profile = () => {
  //get login data
  const loginData=JSON.parse(localStorage.getItem('loginData'));
  const email=loginData && loginData.email;
- const token=localStorage.getItem('token');
-
 
  //search
  const navigate=useNavigate();
@@ -307,13 +306,7 @@ const submitFormUpdateFunc = async (e) => {
         try {
 
           setLoadForm(true);
-          const res = await http.post(`/ads/update/${id}`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                'X-Requested-With': 'XMLHttpRequest',
-                Authorization:'Bearer '+token
-            },
-          });
+          const res = await http.post(`/ads/update/${id}`, formData);
           
           // Return to normal
           setLoadForm(false);
@@ -360,7 +353,7 @@ const DologOut=()=>{
 //////////////////////////////
 
     return (
-        <div className='container-fluid min-vh-100'>
+        <div className='container-fluid profile-cont'>
            <div className='mb-5'>
                <i className='bi bi-house-fill'></i> <span>حسابي</span>
            </div>
@@ -372,7 +365,7 @@ const DologOut=()=>{
                             <Link to='profileData' onClick={()=>{ setSearchRes([])} } className='ms-5 mb-0' >بياناتي</Link>
                             <Link  to='profileSigns' onClick={()=>{ setSearchRes([])} } className='ms-5 mb-0'>لافتاتي</Link>
                             <Link  to='profileFavourite' onClick={()=>{ setSearchRes([])} } className='ms-5 mb-0'>المفضلة</Link>
-                            {loginData && loginData.admin !=null && <Link to='/c-panel' className='ms-5 mb-0'>دخول لوحة التحكم</Link>}
+                            {loginData && loginData.admin !=null && <Link to='/dashboard' className='ms-5 mb-0'>دخول لوحة التحكم</Link>}
                             <a onClick={confirmLogOut}  className='ms-5 mb-0 logout-a' onClick={DologOut} >تسجيل الخروج</a>
                             {loginData  && <input type='text' className='ms-5 rounded-2 border-0 input-search-profile px-2' ref={refSearch} onKeyUp={searchWordFunc} placeholder='بحث في لافتاتي' />}
                            </div>
@@ -561,16 +554,18 @@ const DologOut=()=>{
                                 {searchRes && searchRes.length>0 && !loading && pageTotal && currentPage>pageTotal && (<p className="mx-auto w-fit red">نهاية النتائج</p>) }                               
                            
                             {/*  routes */}
-                            {!searchRes || searchRes && searchRes.length<1 && 
+                          { /*</div> {!searchRes || searchRes && searchRes.length<1 && */}
                                 <Routes>   
                                     <Route path='profileData' element={<ProfileData/>} />    
                                     <Route path='profileSigns' element={<ProfileSigns/>} />
                                     <Route path='profileFavourite' element={<ProfileFavourite/>} />
+                                    <Route path='dashboard' element={<Dashboard/>} />
+
                                     <Route path='c-panel' element={<CPanel/>} />
 
 
                                 </Routes>  
-                            }                               
+                                { /*  }    */}                           
                            </div>
                     </div>)
                      
