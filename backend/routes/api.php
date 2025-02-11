@@ -55,7 +55,7 @@ Route::group([],function () {
     Route::post('search',[apiController::class,'search']); 
      //search in profile
     Route::post('searchWord',[apiController::class,'searchWord']); 
-    //countries, states and cities
+    //get countries, states and cities
     Route::get('conts',[apiController::class,'conts']);  
     Route::post('states',[apiController::class,'states']); 
     Route::post('cities',[apiController::class,'cities']); 
@@ -102,6 +102,15 @@ Route::group([],function () {
     Route::post('update/{id}',[apiAds::class,'update']); //update certain user ads
     //delete ads
     Route::post('delete/{id}',[apiAds::class,'destroy']); //delete certain user ads
+    //search certain user ads
+    Route::post('/user-search',[apiAds::class,'userSearchAds']);
+    //get category and subcategory for ads
+    Route::post('/get-cat-subcat',[apiAds::class,'getCatSubcat']);
+    //get country, state and city for ads
+    Route::post('/get-country-state-city',[apiAds::class,'getCountryStateCity']);
+    //get more ads when clicking on category, subcategory...etc
+    Route::post('/more',[apiAds::class,'moreAds']);
+    
     
  });
 

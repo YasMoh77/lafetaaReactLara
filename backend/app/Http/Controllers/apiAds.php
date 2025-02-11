@@ -7,6 +7,9 @@ use App\Models\Ad;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\subCategory;
+use App\Models\Country;
+use App\Models\State;
+use App\Models\City;
 use App\Rules\countryPhone;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage; //put or delete files
@@ -45,7 +48,6 @@ class apiAds extends Controller
 
      
      // display ads by a certain user
-     
     public function userAds(Request $request)
     {  
         $adsPerPage=9;
@@ -53,14 +55,12 @@ class apiAds extends Controller
         $startFrom = ($pageNum - 1) * $adsPerPage;// Starting point for pagination
         $USERID=User::where('email',$request->email)->value('id');
 
-        $ads=DB::select('
+        $ads=DB::select("
         Select * from ads where USER_ID= :userId
         ORDER BY feature DESC, item_id DESC  
-        LIMIT :startFrom, :adsPerPage
-        ',[
+        LIMIT $startFrom, $adsPerPage
+        ",[
             'userId'=>$USERID,
-            'startFrom'=>$startFrom,
-            'adsPerPage'=>$adsPerPage,
         ]);
 
          // get the total number of ads 
@@ -72,8 +72,176 @@ class apiAds extends Controller
               'page'=>$pageNum
           ];
           return json_encode($response);
-
     }
+
+
+    // display ads by a certain user
+    public function userSearchAds(Request $request)
+    {  
+        $adsPerPage=9;
+        $pageNum=$request->Page ? $request->Page : 1;
+        // Starting point for pagination
+        $startFrom = ($pageNum - 1) * $adsPerPage;
+        // gwt user id
+        $USERID=User::where('email',$request->email)->value('id');
+        //decide search value
+        $search=$request->search==='waiting'?'waiting':'featured';
+        
+        //search for waiting approval ads
+        if($search==='waiting'){
+            $ads=DB::select("
+            Select * from ads where USER_ID= :userId
+            AND approve=0
+            ORDER BY feature DESC, item_id DESC  
+            LIMIT $startFrom, $adsPerPage
+            ",[
+                'userId'=>$USERID,
+            ]);
+            // get the total number of ads 
+            $adsTotalNumber = DB::table('ads')->where(['USER_ID'=>$USERID,'approve'=>0])->count();
+         
+         //search for featured ads
+        }else{
+            $ads=DB::select("
+            Select * from ads where USER_ID= :userId
+            AND feature > 0
+            ORDER BY feature DESC, item_id DESC  
+            LIMIT  $startFrom, $adsPerPage
+            ",[
+                'userId'=>$USERID,
+            ]);
+            // get the total number of ads 
+            $adsTotalNumber = DB::table('ads')->where(['USER_ID'=>$USERID])->where('feature','>',0)->count();
+        }
+
+        $response=[
+            'ads'=>$ads,
+            'div' => ($adsTotalNumber/9),
+            'adsNum' => 'عدد الاعلانات: '.$adsTotalNumber,
+            'page'=>$pageNum
+        ];
+        return json_encode($response);
+    }
+
+
+    //get cat and subcat 
+    public function getCatSubcat(Request $request)
+    { 
+        //get category
+      $cat=Category::where('cat_id',$request->cat)->first()->nameAR;
+      //get subcategory
+      $sub=subCategory::where('subcat_id',$request->sub)->first()->subcat_nameAR;
+      //send data
+      return response()->json([
+          'cat'=>$cat,
+          'sub'=>$sub
+      ]);
+    }
+
+    //get cat and subcat 
+    public function getCountryStateCity(Request $request)
+    { 
+        //get country
+      $country=Country::where('country_id',$request->country)->first()->country_nameAR;
+      //get state
+      $state=State::where('state_id',$request->state)->first()->state_nameAR;
+      //get city
+      $city=City::where('city_id',$request->city)->first()->city_nameAR;
+      //send data
+      return response()->json([
+          'country'=>$country,
+          'state'=>$state,
+          'city'=>$city
+      ]);
+    }
+
+    //get more
+    public function moreAds(Request $request)
+    {   
+        //number of ads on each page
+        $adsPerPage=6;
+        $pageNum=$request->Page ? $request->Page : 1;
+        // Starting point for pagination
+        $startFrom = ($pageNum - 1) * $adsPerPage;
+        //store parameter
+        $param=$request->param && $request->param!==''?$request->param:'';
+        
+        if($param==='country'){
+            $found=Country::where('country_id',$request->paramVal)->first();
+            $ads=DB::select("
+                select * from ads where country_id = :value
+                ORDER BY feature DESC, item_id DESC  
+                LIMIT  $startFrom, $adsPerPage "
+            , [
+            'value'=>$request->paramVal  
+            ]);
+            // get the total number of ads 
+            $adsTotalNumber = DB::table('ads')->where(['country_id'=>$request->paramVal ])->count();
+       }elseif($param==='state'){
+            $found=State::where('state_id',$request->paramVal)->first();
+            $ads=DB::select("
+                select * from ads where state_id = :value
+                ORDER BY feature DESC, item_id DESC  
+                LIMIT  $startFrom, $adsPerPage "
+            , [
+            'value'=>$request->paramVal  
+            ]);
+            // get the total number of ads 
+            $adsTotalNumber = DB::table('ads')->where(['state_id'=>$request->paramVal ])->count();
+        }elseif($param==='city'){
+            $found=City::where('city_id',$request->paramVal)->first();
+            $ads=DB::select("
+                select * from ads where city_id = :value
+                ORDER BY feature DESC, item_id DESC  
+                LIMIT  $startFrom, $adsPerPage "
+            , [
+            'value'=>$request->paramVal  
+            ]);
+            // get the total number of ads 
+            $adsTotalNumber = DB::table('ads')->where(['city_id'=>$request->paramVal ])->count();
+        }elseif($param==='cat'){
+            $found=Category::where('cat_id',$request->paramVal)->first();
+            $ads=DB::select("
+                select * from ads where CAT_ID = :value
+                ORDER BY feature DESC, item_id DESC  
+                LIMIT  $startFrom, $adsPerPage "
+            , [
+            'value'=>$request->paramVal  
+            ]);
+            // get the total number of ads 
+            $adsTotalNumber = DB::table('ads')->where(['CAT_ID'=>$request->paramVal ])->count();
+        }elseif($param==='sub'){
+            $found=subCategory::where('subcat_id',$request->paramVal)->first();
+            $ads=DB::select("
+                select * from ads where subcat_id = :value
+                ORDER BY feature DESC, item_id DESC  
+                LIMIT  $startFrom, $adsPerPage "
+            , [
+            'value'=>$request->paramVal  
+            ]);
+            // get the total number of ads 
+            $adsTotalNumber = DB::table('ads')->where(['subcat_id'=>$request->paramVal ])->count();
+        }
+
+        $noAds=[];
+        //$show=$found->city_nameAR;
+        if($ads && $found){
+            return response()->json([
+                'ads'=>$ads,
+                'div' => ($adsTotalNumber/6),
+                'adsNum' => 'عدد الاعلانات: '.$adsTotalNumber,
+                'page'=>$pageNum,
+                'show'=>$param==='city'?$found->city_nameAR:($param==='state'?$found->state_nameAR:($param==='country'?$found->country_nameAR :($param==='cat'? $found->nameAR :($param==='sub'? $found->subcat_nameAR:''))))
+            ]);
+        }else{
+            return response()->json([
+                'ads'=>$noAds,
+                'show'=>'no'
+            ]);
+        }
+        
+    }
+
 
 
     //get cat name of ads
