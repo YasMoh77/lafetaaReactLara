@@ -12,17 +12,17 @@
 
 /** show page */
 .show-wrapper{
-	padding: 0;
+	padding: 0; overflow: visible; /* Ensure no overflow is hidden */
 }
 .main,.main2,.main3{
 	border: 1px solid lightgray;
 	margin-bottom: 5vh;
 }
-.main{height: 85vh;}
-.main img{height: 85%;}
+.main{height: 99vh;}
+.main img{height: 75%;}
 
 .main2{height: 80vh;} 
-.main2 img{height: 85%;}
+.main2 img{height: 70%;}
 
 .main3{height: 80vh;}
 /*.main3 img{height: 85%;} */

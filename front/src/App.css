@@ -50,7 +50,8 @@
 .yellow{ color: #fbff05;}
 .white{ color: white;}
 .bg-yellow{background-color: yellow;}
-
+.small{font-size: 1.3vw;}
+.minheight{min-height: 75vh;}
 :root{
 	--mainColor: #ffaa00;
 	--textColor:#0aadad;
@@ -67,6 +68,6 @@ body{
 .container-fluid{
   padding-right: 0;
 }
-.row{
+.row-right-minus{
   margin-right: -2vw !important;
 }

@@ -80,7 +80,7 @@ const Login = () => {
                        localStorage.setItem('nameRegister',JSON.stringify(res2.data.name))
                         navigate('/verify')
                   }else{
-                      // store only user name and email 
+                      // store only user name and email  
                       const name=res2.data.name;
                       const email=res2.data.email;
                       const admin=res2.data.admin

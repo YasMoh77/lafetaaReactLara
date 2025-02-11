@@ -3,8 +3,10 @@ import {Link} from 'react-router-dom'
 import {http} from '../axios/axiosGlobal'
 import './show.css';
 import ShowSaved from  './ShowSaved'
+import GetCatSubcat from '../helpers/catSubcat';
+import GetCountryStateCity from '../helpers/countryStateCity';
 
-
+//this is home page
 function Show() {
     const loginData=JSON.parse(localStorage.getItem('loginData'));
 
@@ -31,7 +33,6 @@ function Show() {
     const [loadingSearch, setLoadingSearch] = useState(false)
     const [loadingMore, setLoadingMore] = useState(false)
     const [searchWord, setSearchWord] = useState('')
-
 
     //loadMore
     const [currentPage, setCurrentPage] = useState(1)
@@ -127,7 +128,7 @@ const searchFunc=async(e)=>{
         setDiv(res.data.div);
         setSearchWord(res.data.word)
         setResult(res.data.data);
-        console.log(res.data)
+       // console.log(res.data)
         //end loading spinner  
         setLoadingSearch(false);
 }
@@ -225,8 +226,10 @@ const code=(name)=>{
                                     <div className="row">
                                         <div id="show"  className="d-flex flex-wrap show-wrapper justify-content-between col-sm-12">
                                         { ads.map((e,index)=>(<div className='col-xs-12 col-md-4 main'>
-                                            <img  onClick={(e)=>{enlargeFun(e.target.src)}} key={index} src={baseURL+e.photo} alt={e.NAME} className='w-100 mx-auto d-block img'/> 
-                                            <div className='pe-1 mb-1'>{e.NAME}</div>                                            
+                                            <img  onClick={(e)=>{enlargeFun(e.target.src)}} key={index} src={baseURL+e.photo} alt={e.NAME} className='w-100 mx-auto d-block mb-1'/> 
+                                            <GetCatSubcat cat={e.CAT_ID} sub={e.subcat_id} />
+                                            <GetCountryStateCity country={e.country_id} state={e.state_id} city={e.city_id} />
+                                            <div className='pe-1 mb-2 fw-bold text-muted text-truncate'>{e.NAME}</div>                                            
                                             <div className='featured-icons-div d-flex px-1 justify-content-between'>
                                                <div>
                                                     {e.phone != 0 ? <a href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 
@@ -249,7 +252,9 @@ const code=(name)=>{
                                         <div id="show"  className="d-flex flex-wrap show-wrapper justify-content-between col-sm-12">
                                         { adsLatest.map((e,index)=>(<div className='col-xs-12 col-md-4 main2'>
                                             <img  onClick={(e)=>{enlargeFun(e.target.src)}} key={index} src={baseURL+e.photo} alt={e.NAME} className='w-100 mx-auto d-block img'/> 
-                                            <div className='pe-1 mb-1'>{e.NAME}</div>                                            
+                                            <GetCatSubcat cat={e.CAT_ID} sub={e.subcat_id} />
+                                            <GetCountryStateCity country={e.country_id} state={e.state_id} city={e.city_id} />
+                                            <div className='pe-1 mb-1 fw-bold text-muted text-truncate'>{e.NAME}</div>                                            
                                             <div className='featured-icons-div d-flex px-1 justify-content-between'>
                                                <div>
                                                     {e.phone != 0 ? <a href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 
@@ -307,7 +312,7 @@ const code=(name)=>{
                         
                         
                         
-                            
+                         {/* search for ads */} 
                         <div  className="container-fluid">
                                 {loadingSearch? (
                                  <span className="spinner-border gray mx-auto d-block"></span>
@@ -319,7 +324,9 @@ const code=(name)=>{
                                             {result&&result.length>0 ?  result.map((e,index)=>(
                                                 <div className='col-xs-12 col-md-6 col-lg-4 main2'>
                                                     <img onClick={(e)=>{enlargeFun(e.target.src)}} key={index} src={baseURL+e.photo} alt={e.NAME} className='w-100 mx-auto d-block img'/> 
-                                                    <div className='pe-1 mb-1'>{e.NAME}{e.item_id}</div>                                            
+                                                    <GetCatSubcat cat={e.CAT_ID} sub={e.subcat_id} />
+                                                    <GetCountryStateCity country={e.country_id} state={e.state_id} city={e.city_id} />
+                                                    <div className='pe-1 mb-1 fw-bold text-muted text-truncate'>{e.NAME}</div>                                            
                                                     <div className='featured-icons-div d-flex px-1 justify-content-between'>
                                                         <div>
                                                             {e.phone != 0 ? <a  href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 

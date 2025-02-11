@@ -2,6 +2,7 @@ import Nav from '../navbar/nav'
 import About from '../more/about'
 import Faq from '../more/faq'
 import Show from '../show/show'
+import More from '../more/more'
 import Register from '../register/register'
 import Verify from '../verify/verify'
 import Verified from '../verify/verified'
@@ -24,7 +25,7 @@ import Footer from '../footer/footer'
 
 const Exports=
 {
-    Nav,About,Faq,Show,Register,Verify,Verified,Login,RequestReset,Forgetpassword,Profile,
+    Nav,About,Faq,More,Show,Register,Verify,Verified,Login,RequestReset,Forgetpassword,Profile,
     Add,Dashboard,CPanel,SuccessPay,SuccessPayExternal,CancelPay,Footer
 }
 

@@ -72,7 +72,7 @@ const Register = () => {
                 }
               }catch(error){
                 setLoadNav(false)
-                console.log(error)
+               // console.log(error)
                 error.response ? setResponseError(error.response.data.errors) :setResponseError('');
               }
          }//end if

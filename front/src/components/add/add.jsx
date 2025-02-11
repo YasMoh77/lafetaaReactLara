@@ -36,7 +36,7 @@ const Add = () => {
         getCats();
         getCountries();
     }, [])
-    
+     
     //get cats
     const getCats=async()=>{
         const res=await axios.get('http://127.0.0.1:8000/api/cats');
