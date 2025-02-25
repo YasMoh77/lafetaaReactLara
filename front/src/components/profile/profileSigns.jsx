@@ -2,9 +2,8 @@ import { useEffect,useState,useRef } from 'react';
 import { useNavigate } from 'react-router'
 import {http} from '../axios/axiosGlobal'
 import axios from 'axios'
-/*import ShowCat from '../show/showCat'
-import ShowSubcat from '../show/showSubcat'*/
-
+import GetCountryStateCity from '../helpers/countryStateCity';
+import GetCatSubcat from '../helpers/catSubcat';
 import  './profile.css'
 
 
@@ -14,7 +13,7 @@ const ProfileSigns = () => {
     const email=loginData && loginData.email;
     const token=localStorage.getItem('token');
     const navigate=useNavigate();
-    const [data, setData] = useState([])
+    const [userAds, setUserAds] = useState([])
     const [adsNum, setAdsNum] = useState(null)
     const [pageTotal, setPageTotal] = useState(null)
     const [loading, setLoading] = useState(false)
@@ -68,10 +67,10 @@ const ProfileSigns = () => {
 
     //search for waiting and featured ads
     const chooseSearch = useRef(null)
-    const [searchData, setSearchData] = useState(null)
+    const [searchSelect, setSearchSelect] = useState(null)
     
     
-    //get the ads
+    //get ads in profile addes by this user 
     const getAds=async()=>{
         //start loading spinner before fetching data
         setLoading(true)
@@ -79,7 +78,7 @@ const ProfileSigns = () => {
         const email=loginData.email;
         const postData={email,currentPage};
         const res= await http.post(`/ads/user`,postData);
-        setData(res.data.ads)
+        setUserAds(res.data.ads)
         setAdsNum(res.data.adsNum)
         setPageTotal(res.data.div)
         //end loading spinner after fetching data
@@ -100,7 +99,7 @@ const ProfileSigns = () => {
      const res= await http.post(`/ads/user`,postData);
      const newItems = res.data.ads;
      // Append new items to existing results
-     setData(prevData => [...prevData, ...newItems]);
+     setUserAds(prevData => [...prevData, ...newItems]);
      //increment currentPage
      setCurrentPage(Page); // Update current page
      setLoadingMore(false);  
@@ -307,7 +306,7 @@ const ProfileSigns = () => {
        }
   };
 
-  //choose Search 
+  //choose Search (search select) 
   const chooseSearchFunc=async()=>{
     const search=chooseSearch.current.value
     if(search!=''){
@@ -317,9 +316,9 @@ const ProfileSigns = () => {
       const postData={email,search};
        const res= await http.post(`/ads/user-search`,postData);
        //store search data 
-       setSearchData(res.data.ads)
+       setSearchSelect(res.data.ads)
        //don't show old ads
-       setData(null)
+       setUserAds(null)
        //store ads number and number of ads shown on page
        setAdsNum(res.data.adsNum)
        setPageTotal(res.data.div)
@@ -341,22 +340,11 @@ const ProfileSigns = () => {
     else  if(name==5||name==='قطر'){return '9740';} else  if(name==6||name==='سلطنة عمان'){return '9680';}
   }
 
-
-  /*const getCat=async(cat)=>{
-      if(cat==1){return 'activ';}else if(cat==2){return 'jobs';}
-      else if(cat==3){return 'prod';} else if(cat==4){return 'occa';}
-      else if(cat==5){return 'wanted';} else if(cat==6){return 'lost';}
-      const res=await http.get('ads/cat/'+cat);
-      console.log(res.data.name)
-  }*/
-
   
   
   ///////////////////
 
     return (
-         
-         
         <div className='profData-div py-3 px-2' >
                {/* edit images */}
                {imgId && 
@@ -372,11 +360,9 @@ const ProfileSigns = () => {
                      <input id='title' className='d-block mb-2 w-100' ref={refTitle} type='text' placeholder={imgName}   />
                      <small ref={refSmall} className='d-block w-fit mx-auto mb-3' >5 - 40 حرف</small>
                      
-
                      <label htmlFor="phone" className="d-block mb-2">تليفون محمول </label>
                      <input type="text" id='phone' ref={refPhone}  className="d-block mb-4 w-100" placeholder={'0'+optPhone} />
                      
-
                      <label  className='d-block mb-2' >تغيير الصورة</label>
                      <input type='file' className='d-block mb-5' ref={refFile} />
 
@@ -397,13 +383,11 @@ const ProfileSigns = () => {
                         </div>
                         <small className='w-fit mx-auto mt-0 mb-4 d-block'> يبدأ بـ https://www  &emsp; أو &emsp; http://www</small>
 
-
                         <div className="input-cont-pro d-flex ">
                             <label htmlFor="email" className="form-label">بريد الكتروني </label>
                             <input type="text" id='email' ref={refEmail} className="form-control bg-light" placeholder={optEmail} />
                         </div>
                         <small className='w-fit mx-auto mt-0 mb-4 d-block'> مثال: example@gmail.com</small>
-
 
                         <div className="input-cont-pro d-flex ">
                             <label htmlFor="youtube" className="form-label">قناة يوتيوب  </label>
@@ -416,7 +400,6 @@ const ProfileSigns = () => {
                      <input type='hidden'  ref={refId} value={imgId} />
                      <input type='hidden'  ref={refEditFeature} value={editFeature} />
                      
-
                       {loadForm ? <button  className='btn btn-info w-25 mx-auto d-block'><span className='spinner-border gray d-block m-auto'></span></button> : <button className='btn btn-info w-25 mx-auto mb-5 d-block'>أرسل</button> }
                      
                       {/* show form error */}
@@ -500,96 +483,98 @@ const ProfileSigns = () => {
 
              {/* enlarge images */}
              {enlarge && 
-             (<div className="overlay">
-                 <img src={enlarge}  alt="k" /> <i onClick={stopEnlargeFun} className="close-btn bi bi-x-square" ></i>
-              </div>)
+                <div className="overlay">
+                  <img src={enlarge}  alt="k" /> <i onClick={stopEnlargeFun} className="close-btn bi bi-x-square" ></i>
+                </div>
              }
 
-             {/* show ads on the page */}
+             {/* show user's ads in profile */}
              <div className='container-fluid'>
-                  {/* search form */}
-                   <div className='d-flex justify-content-between mb-2'>
-                      <p>{adsNum}</p>
-                      <form onChange={()=>{chooseSearchFunc()}} className='w-25'>
-                        <select ref={chooseSearch} className='w-100'>
-                          <option value=''>اختر</option>
-                          <option value='waiting'>اعلانات في انتظار الموافقة</option>
-                          <option value='featured'>اعلانات مميزة</option>
-                        </select>
-                      </form>
-                   </div>
-
-                    {/* show ads */}
-                   <div id="show2"  className="d-flex flex-wrap show-wrapper justify-content-between ">
                     {
                       loading 
-                      ?(<p className='spinner-border gray mx-auto'></p>) 
-                        /* show user ads */
-                      : data && data.length>0 
-                          ? data.map((e, index)=>(
-                              <div key={e.item_id} className='col-xs-12 col-md-6 col-lg-4 main3 main-prof'>
-                                  <img onClick={(e)=>{enlargeFun(e.target.src)}} id={e.item_id}  key={index} name={e.feature} src={baseURLImg+e.photo} alt={e.NAME} className='w-100 h-75 mx-auto d-block img'/> 
-                                      {/*<ShowCat catId={e.CAT_ID} />
-                                        <ShowSubcat subId={e.subcat_id} />*/}
-                                  <div className='pe-1 my-1'>{e.NAME}</div>                                            
-                                  <div className='featured-icons-div d-flex px-1 justify-content-between'>
-                                    <div>
-                                          {e.phone >0 ? <a href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 
-                                          {e.whatsapp >0 ? <a href={'https://wa.me/'+code(e.country_id)+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a><i class="bi bi-whatsapp empty"></i></a> } 
-                                          {e.website !='' ? <a href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a><i class="bi bi-globe-americas empty"></i></a>} 
-                                          {e.item_email !='' ? <a href={'mailto:'+e.item_email} ><i class="bi bi-envelope-at-fill full-env"></i></a> : <a><i class="bi bi-envelope-at-fill empty"></i></a> } 
-                                          {e.youtube !='' ? <a href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a><i class="bi bi-youtube empty"></i></a> } 
-                                      </div>
-                                    {e.approve ==1 ? <i title='معروض' className='bi bi-unlock-fill green'></i> : <i title='في انتظار الموافقة' className='bi bi-lock-fill yellow'></i>} 
-                                  </div>
-                                              
-                                  <div key={e.item_id} title={e.phone} className='d-flex justify-content-around mt-2'>
-                                        {/* edit ad*/}
-                                        <i title='تحرير' onClick={(e)=>{editAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.title)}} className='bi bi-wrench'></i>
-                                        {/* promote and display according to plan*/}
-                                        {e.feature==2 && <i title='باقة ذهبية'    className="bi bi-rocket-takeoff-fill green"></i>}
-                                        {e.feature==1 && <i title='باقة فضية'  onClick={(e)=>{ tameezAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.previousSibling.previousSibling.previousSibling.name)  }}  className="bi bi-rocket-takeoff-fill yellow"></i>}
-                                        {e.feature==0 && <i title='تمييز'  onClick={(e)=>{ tameezAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.previousSibling.previousSibling.previousSibling.name)  }}  className="bi bi-rocket-takeoff"></i>}
-                                        {/* delete ad*/}
-                                        <i title='حذف' className='bi bi-trash'></i>
-                                  </div>
-                              </div>
-                          )) 
-                          /* show search results */
-                        : searchData&&searchData.length>0&&
-                          searchData.map((e, index)=>(
-                            <div key={e.item_id} className='col-xs-12 col-md-6 col-lg-4 main3 main-prof'>
-                                <img onClick={(e)=>{enlargeFun(e.target.src)}} id={e.item_id}  key={index} name={e.feature} src={baseURLImg+e.photo} alt={e.NAME} className='w-100 h-75 mx-auto d-block img'/> 
-                                    {/*<ShowCat catId={e.CAT_ID} />
-                                      <ShowSubcat subId={e.subcat_id} />*/}
-                                <div className='pe-1 my-1'>{e.NAME}</div>                                            
-                                <div className='featured-icons-div d-flex px-1 justify-content-between'>
-                                  <div>
-                                        {e.phone >0 ? <a href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 
-                                        {e.whatsapp >0 ? <a href={'https://wa.me/'+code(e.country_id)+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a><i class="bi bi-whatsapp empty"></i></a> } 
-                                        {e.website !='' ? <a href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a><i class="bi bi-globe-americas empty"></i></a>} 
-                                        {e.item_email !='' ? <a href={'mailto:'+e.item_email} ><i class="bi bi-envelope-at-fill full-env"></i></a> : <a><i class="bi bi-envelope-at-fill empty"></i></a> } 
-                                        {e.youtube !='' ? <a href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a><i class="bi bi-youtube empty"></i></a> } 
-                                    </div>
-                                  {e.approve ==1 ? <i title='معروض' className='bi bi-unlock-fill green'></i> : <i title='في انتظار الموافقة' className='bi bi-lock-fill yellow'></i>} 
-                                </div>
-                                            
-                                <div key={e.item_id} title={e.phone} className='d-flex justify-content-around mt-2'>
-                                      {/* edit ad*/}
-                                      <i title='تحرير' onClick={(e)=>{editAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.title)}} className='bi bi-wrench'></i>
-                                      {/* promote and display according to plan*/}
-                                      {e.feature==2 && <i title='باقة ذهبية'    className="bi bi-rocket-takeoff-fill green"></i>}
-                                      {e.feature==1 && <i title='باقة فضية'  onClick={(e)=>{ tameezAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.previousSibling.previousSibling.previousSibling.name)  }}  className="bi bi-rocket-takeoff-fill yellow"></i>}
-                                      {e.feature==0 && <i title='تمييز'  onClick={(e)=>{ tameezAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.previousSibling.previousSibling.previousSibling.name)  }}  className="bi bi-rocket-takeoff"></i>}
-                                      {/* delete ad*/}
-                                      <i title='حذف' className='bi bi-trash'></i>
-                                </div>
+                      ?<div className='w-fit mx-auto'><p className='spinner-border gray large-spinner'></p></div> 
+                      :  <>
+                            {/* search form select */}
+                            <div className='d-flex justify-content-between mb-2'>
+                                <p>{adsNum}</p>
+                                <form onChange={()=>{chooseSearchFunc()}} className='w-25'>
+                                  <select ref={chooseSearch} className='w-100'>
+                                    <option value=''>اختر</option>
+                                    <option value='waiting'>اعلانات في انتظار الموافقة</option>
+                                    <option value='featured'>اعلانات مميزة</option>
+                                  </select>
+                                </form>
                             </div>
-                        )) 
+
+                            {/* show user's ads when clicking on myAds */}
+                            <div id="show2"  className="d-flex flex-wrap show-wrapper justify-content-between ">
+                                {userAds && userAds.length>0 
+                                  ? userAds.map((e, index)=>(
+                                    <div key={e.item_id} className='col-xs-12 col-md-6 col-lg-4 main3 main-prof'>
+                                        <img onClick={(e)=>{enlargeFun(e.target.src)}} id={e.item_id}  key={index} name={e.feature} src={baseURLImg+e.photo} alt={e.NAME} className='w-100 mx-auto d-block img'/> 
+                                          <GetCatSubcat cat={e.CAT_ID} sub={e.subcat_id} />
+                                          <GetCountryStateCity country={e.country_id} state={e.state_id} city={e.city_id} />
+                                        <div className='pe-1 my-1'>{e.NAME}فف</div>                                            
+                                        <div className='featured-icons-div d-flex px-1 justify-content-between fs-5 fs-md-6'>
+                                          <div>
+                                                {e.phone >0 ? <a className='me-3' href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a className='me-3'><i class="bi bi-telephone-fill empty"></i></a>} 
+                                                {e.whatsapp >0 ? <a className='me-3' href={'https://wa.me/'+code(e.country_id)+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a className='me-3'><i class="bi bi-whatsapp empty"></i></a> } 
+                                                {e.website !='' ? <a className='me-3' href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a className='me-3'><i class="bi bi-globe-americas empty"></i></a>} 
+                                                {e.item_email !='' ? <a className='me-3' href={'mailto:'+e.item_email} ><i class="bi bi-envelope-at-fill full-env"></i></a> : <a className='me-3'><i class="bi bi-envelope-at-fill empty"></i></a> } 
+                                                {e.youtube !='' ? <a className='me-3' href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a className='me-3'><i class="bi bi-youtube empty"></i></a> } 
+                                            </div>
+                                          {e.approve ==1 ? <i title='معروض' className='bi bi-unlock-fill green'></i> : <i title='في انتظار الموافقة' className='bi bi-lock-fill yellow'></i>} 
+                                        </div>
+                                                    
+                                        <div key={e.item_id} title={e.phone} className='d-flex justify-content-around mt-2'>
+                                              {/* edit ad*/}
+                                              <i title='تحرير' onClick={(e)=>{editAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.title)}} className='bi bi-wrench'></i>
+                                              {/* promote and display according to plan*/}
+                                              {e.feature==2 && <i title='باقة ذهبية'    className="bi bi-rocket-takeoff-fill green"></i>}
+                                              {e.feature==1 && <i title='باقة فضية'  onClick={(e)=>{ tameezAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.previousSibling.previousSibling.previousSibling.name)  }}  className="bi bi-rocket-takeoff-fill yellow"></i>}
+                                              {e.feature==0 && <i title='تمييز'  onClick={(e)=>{ tameezAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.previousSibling.previousSibling.previousSibling.name)  }}  className="bi bi-rocket-takeoff"></i>}
+                                              {/* delete ad*/}
+                                              <i title='حذف' className='bi bi-trash'></i>
+                                        </div>
+                                    </div>
+                                   )) 
+                                   /* show search results from search form select */
+                                  : searchSelect&&searchSelect.length>0&&
+                                   searchSelect.map((e, index)=>(
+                                      <div key={e.item_id} className='col-xs-12 col-md-6 col-lg-4 main3 main-prof'>
+                                          <img onClick={(e)=>{enlargeFun(e.target.src)}} id={e.item_id}  key={index} name={e.feature} src={baseURLImg+e.photo} alt={e.NAME} className='w-100 mx-auto d-block img'/> 
+                                            <GetCatSubcat cat={e.CAT_ID} sub={e.subcat_id} />
+                                            <GetCountryStateCity country={e.country_id} state={e.state_id} city={e.city_id} />
+                                          <div className='pe-1 my-1'>{e.NAME}</div>                                            
+                                          <div className='featured-icons-div d-flex px-1 justify-content-between fs-5 fs-md-6'>
+                                            <div>
+                                                  {e.phone >0 ? <a className='me-3' href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a className='me-3'><i class="bi bi-telephone-fill empty"></i></a>} 
+                                                  {e.whatsapp >0 ? <a className='me-3' href={'https://wa.me/'+code(e.country_id)+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a className='me-3'><i class="bi bi-whatsapp empty"></i></a> } 
+                                                  {e.website !='' ? <a className='me-3' href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a className='me-3'><i class="bi bi-globe-americas empty"></i></a>} 
+                                                  {e.item_email !='' ? <a className='me-3' href={'mailto:'+e.item_email} ><i class="bi bi-envelope-at-fill full-env"></i></a> : <a className='me-3'><i class="bi bi-envelope-at-fill empty"></i></a> } 
+                                                  {e.youtube !='' ? <a className='me-3' href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a className='me-3'><i class="bi bi-youtube empty"></i></a> } 
+                                              </div>
+                                            {e.approve ==1 ? <i title='معروض' className='bi bi-unlock-fill green'></i> : <i title='في انتظار الموافقة' className='bi bi-lock-fill yellow'></i>} 
+                                          </div>
+                                                      
+                                          <div key={e.item_id} title={e.phone} className='d-flex justify-content-around mt-2'>
+                                                {/* edit ad*/}
+                                                <i title='تحرير' onClick={(e)=>{editAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.title)}} className='bi bi-wrench'></i>
+                                                {/* promote and display according to plan*/}
+                                                {e.feature==2 && <i title='باقة ذهبية'    className="bi bi-rocket-takeoff-fill green"></i>}
+                                                {e.feature==1 && <i title='باقة فضية'  onClick={(e)=>{ tameezAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.previousSibling.previousSibling.previousSibling.name)  }}  className="bi bi-rocket-takeoff-fill yellow"></i>}
+                                                {e.feature==0 && <i title='تمييز'  onClick={(e)=>{ tameezAd(e.target.parentElement.previousSibling.previousSibling.previousSibling.id,e.target.parentElement.previousSibling.previousSibling.previousSibling.alt,e.target.parentElement.previousSibling.previousSibling.previousSibling.src,e.target.parentElement.previousSibling.previousSibling.previousSibling.name)  }}  className="bi bi-rocket-takeoff"></i>}
+                                                {/* delete ad*/}
+                                                <i title='حذف' className='bi bi-trash'></i>
+                                          </div>
+                                      </div>
+                                   ))}
+                             </div>
+                         </> 
                     }
-                   </div>
-                   {data && data.length>0 && !loading && pageTotal && currentPage<pageTotal && (<button ref={refBtnMore} onClick={loadMore} className="btn btn-info w-25 mx-auto d-block  loadMoreBtn" id="loadMore">   {loadingMore ? (<span className="spinner-border spinner" role="status" aria-hidden="true"></span>) : (<span className='white'>تحميل المزيد </span>)} </button>) }
-                   {data && data.length>0 && !loading && pageTotal && currentPage>pageTotal && (<p className="mx-auto w-fit red">نهاية النتائج</p>) }
+                   
+                   {userAds && userAds.length>0 && !loading && pageTotal && currentPage<pageTotal && (<button ref={refBtnMore} onClick={loadMore} className="btn btn-info w-25 mx-auto d-block  loadMoreBtn" id="loadMore">   {loadingMore ? (<span className="spinner-border spinner" role="status" aria-hidden="true"></span>) : (<span className='white'>تحميل المزيد </span>)} </button>) }
+                   {userAds && userAds.length>0 && !loading && pageTotal && currentPage>pageTotal && (<p className="mx-auto w-fit red">نهاية النتائج</p>) }
 
             </div>
         </div>

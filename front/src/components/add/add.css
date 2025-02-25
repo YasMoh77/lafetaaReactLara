@@ -7,18 +7,4 @@
     padding: 10vh 2vw ;
     width: 60%;
 }
-.form-add .input-cont{
-    padding-left: 4vw;
-}
-.input-cont label{
-    flex: 1.5;
-}
-.input-cont input,.input-cont select{
-    flex: 4;
-}
-.social-div{
-    background-color: #a7aaab;
-}
-.form-add .form-control{
-    padding: .375rem 1.65rem !important;
-}
+

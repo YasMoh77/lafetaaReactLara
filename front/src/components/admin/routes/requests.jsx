@@ -1,10 +1,10 @@
 import { useState,useEffect } from 'react';
-import { http } from '../axios/axiosGlobal';
+import { http } from '../../axios/axiosGlobal';
 import { useNavigate } from 'react-router'
-import Pagination  from './pagination'
+import Pagination  from '../pagination'
 
 import axios from 'axios';
-import  './admin.css'
+import  '../admin.css'
 
 const Requests = ({hideFunc}) => {
     //receive hideFunc as a prop, load it with hide whose value is 1
@@ -50,7 +50,7 @@ const Requests = ({hideFunc}) => {
 
 
   //delete user
-  const deletePlan=async(plan_id)=>{
+  const deletePlan=async(plan_id)=>{ 
     const del=window.confirm('Do you want to delete this plan?')
     if(del){    
        const res=await http.post(`/panel/delete-plan/${plan_id}`)
@@ -82,10 +82,11 @@ const Requests = ({hideFunc}) => {
     return (
         <div className='container-fluid top-cont'>
             {loadingPlans ? (<p className='spinner-border gray mx-auto mt-5 d-block'></p>)
-             : plans&& plans.length>0 &&
+             : plans&& plans.length>0 ?
              (        
             <>
-            <p>All plan requests  ({total})</p>
+            <span>All plan requests  ({total})</span>
+            <p className='small'>These users requested to feature their ads</p>
             <div className='overflow-auto w-100 pb-5 table-user-parent' >
                 <table className='mb-5 table-user' >                   
                    <thead className='bg-info fw-bold'>
@@ -118,7 +119,7 @@ const Requests = ({hideFunc}) => {
                             <td>{e.ad_status}</td>
                             <td>{e.ad_chosenplan}</td>
                             <td>{e.ad_username}</td>
-                            <td>{e.ad_userphone}</td>
+                            <td><a href={'tel:0'+e.ad_userphone}>{'0'+e.ad_userphone}</a></td> 
                             <td>{e.pay_method}</td>
                             <td>{e.order_date}</td>                                                                                                     
                             {loginData.admin ==='sup'||loginData.admin ==='own' && // action ONLY allowed for super admins
@@ -126,10 +127,8 @@ const Requests = ({hideFunc}) => {
                                 {/* block user */}
                                <i title='Accept and feature ' className='bi bi-door-closed-fill me-5 p-1 bg-warning text-light' onClick={()=>{featureFunc(e.item_id,e.ad_chosenplan)}} ></i>                       
                                {/* delete plan */}
-                               <i title='Delete plan' onClick={()=>{deletePlan(e.plan_id)}} className='bi bi-trash me-5 bg-danger text-light p-1'></i>
-                                                              
+                               <i title='Delete plan row in plan table' onClick={()=>{deletePlan(e.plan_id)}} className='bi bi-trash me-5 bg-danger text-light p-1'></i>
                             </td>)}
-                                                                               
                         </tr>
                        ))}
                     </tbody>                 
@@ -139,10 +138,8 @@ const Requests = ({hideFunc}) => {
               
             </div>
             </>
-
-           
-
-            )}      
+            ):<p>لا توجد طلبات لخطط تمييز </p>
+            }      
         </div>
     )
 }

@@ -11,14 +11,9 @@
 .profData-div{
     min-height: 15vh;
 }
-.logout-a{
-    cursor: pointer;
-}
-.main-prof{
-    margin-bottom: 10vh;
-}
 .input-search-profile{
     height: 8vh;
+    width: 40%;
 }
 
 /*edit in profile*/
@@ -50,19 +45,15 @@
 .input-cont-pro input{
     border: 1px solid gray;
 }
-
 /** making ad pro(tameez) */
 .head-pro{
     background-color: #e426a5;
 }
-
 /** search in profile */
 .main3{
 	border: 1px solid lightgray;
 	margin-bottom: 5vh;
 }
-
-.main3{height: 80vh;}
 .loadMoreBtn{
     margin-bottom: 20vh;
 }

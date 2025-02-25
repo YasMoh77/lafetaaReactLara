@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router'
 import {Link} from 'react-router-dom'
 import {http} from '../axios/axiosGlobal'
 import ShowSaved from '../show/ShowSaved';
+import GetCatSubcat from '../helpers/catSubcat';
+import GetCountryStateCity from '../helpers/countryStateCity';
 
 import  './profile.css'
 
@@ -59,7 +61,7 @@ const ProfileFavourite = () => {
         }
 
         setData(res.data.data)
-        console.log(res.data)
+        //console.log(res.data)
         setAdsNum(res.data.adsNum)
         setPageTotal(res.data.div)
         //end loading spinner after fetching data
@@ -97,6 +99,34 @@ const ProfileFavourite = () => {
      //enable loadMore button
       refBtnMore.current.disabled=false;      
   }
+
+  //search my ads when type in upper input
+const searchWordFunc=async(word,email,ads)=>{
+    // e.preventDefault()
+    if(word.length>0){
+        //setOkProfileData(false)
+         setLoading(true)
+         //fetch api
+         const res= ads!==''
+         ?await http.post('/searchWord',{word,email,ads})
+         :await http.post('/searchWord',{word,email});
+         setAdsNum(res.data.adsNum)
+         setPageTotal(res.data.div)
+                  
+         //setSearchWord(res.data.word)
+         //ads!==''
+         //?setSearchInput(res.data.userAds)
+        // :setFavourites(res.data.favourites)
+         //setSearchRes([]);
+         console.log(res.data)
+         //setProfileData(false)
+         //res.data.msg&&setMsg(res.data.msg)
+         setLoading(false)
+    }else{
+        //setSearchInput([]) 
+       // setFavourites([])
+    }
+ }
 
 
 
@@ -136,27 +166,33 @@ const ProfileFavourite = () => {
              {/* show ads on the page */}
              <div className='container-fluid'>
                    <p>{adsNum}</p>
-                   <div id="show2"  className="d-flex flex-wrap show-wrapper justify-content-between ">
+                   <input type='text' className='border-0 w-75 px-2' onChange={(e)=>{searchWordFunc(e.target.value,email,'')}} /*value={searchValue}*/  placeholder='بحث في المحفوظات' />
+                   <div className="">
                     {
-                        loading ? (<p className='spinner-border gray mx-auto'></p>) : data && data.length>0 && data.map((e, index)=>(
+                        loading 
+                        ? (<p className='spinner-border gray large-spinner mx-auto'></p>) 
+                        : <div className="d-flex flex-wrap show-wrapper justify-content-between ">
+                          
+                            {data && data.length>0 && data.map((e, index)=>(
                             <div key={e.item_id} className='col-xs-12 col-md-6 col-lg-4 main3 main-prof'>
                                 <img onClick={(e)=>{enlargeFun(e.target.src)}} id={e.item_id}  key={index} name={e.feature} src={baseURLImg+e.photo} alt={e.NAME} className='w-100 h-75 mx-auto d-block img'/> 
-                                     {/*<ShowCat catId={e.CAT_ID} />
-                                      <ShowSubcat subId={e.subcat_id} />*/}
+                                   <GetCatSubcat cat={e.CAT_ID} sub={e.subcat_id} />
+                                   <GetCountryStateCity country={e.country_id} state={e.state_id} city={e.city_id} />
                                 <div className='pe-1 my-1'>{e.NAME}</div>                                            
-                                <div className='featured-icons-div d-flex justify-content-between px-1'>
+                                <div className='featured-icons-div d-flex justify-content-between fs-5 fs-md-6 px-1'>
                                    <div>
-                                        {e.phone >0 ? <a href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 
-                                        {e.whatsapp >0 ? <a href={'https://wa.me/'+code(e.country_id)+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a><i class="bi bi-whatsapp empty"></i></a> } 
-                                        {e.website !='' ? <a href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a><i class="bi bi-globe-americas empty"></i></a>} 
-                                        {e.item_email !='' ? <a href={'mailto:'+e.item_email}><i class="bi bi-envelope-at-fill full-env"></i></a> : <a><i class="bi bi-envelope-at-fill empty"></i></a> } 
-                                        {e.youtube !='' ? <a href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a><i class="bi bi-youtube empty"></i></a> } 
+                                        {e.phone >0 ? <a className='me-3' href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a className='me-3'><i class="bi bi-telephone-fill empty"></i></a>} 
+                                        {e.whatsapp >0 ? <a className='me-3' href={'https://wa.me/'+code(e.country_id)+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a className='me-3'><i class="bi bi-whatsapp empty"></i></a> } 
+                                        {e.website !='' ? <a className='me-3' href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a className='me-3'><i class="bi bi-globe-americas empty"></i></a>} 
+                                        {e.item_email !='' ? <a className='me-3' href={'mailto:'+e.item_email}><i class="bi bi-envelope-at-fill full-env"></i></a> : <a className='me-3'><i class="bi bi-envelope-at-fill empty"></i></a> } 
+                                        {e.youtube !='' ? <a className='me-3' href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a className='me-3'><i class="bi bi-youtube empty"></i></a> } 
                                     </div>
                                     {loginData ?  (<ShowSaved id={e.item_id} isSaved={savedStatuses[e.item_id] === 'saved'}/>) : (<Link to='/login'><i className='bi bi-heart align-self-center'></i></Link>) }
                                 </div>
                                
                             </div>
-                        )) 
+                        ))}
+                        </div> 
                     }
                    </div>
                    {data && data.length>0 && !loading && pageTotal && currentPage<pageTotal && (<button ref={refBtnMore} onClick={loadMore} className="btn btn-info w-25 mx-auto d-block  loadMoreBtn" id="loadMore">   {loadingMore ? (<span className="spinner-border spinner" role="status" aria-hidden="true"></span>) : (<span className='white'>تحميل المزيد </span>)} </button>) }

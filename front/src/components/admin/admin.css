@@ -9,6 +9,12 @@
 .table-ad{
     min-width:215vw;
 }
+@media (max-width: 1024px) {
+  .table-ad{min-width: 230vw;}
+}
+@media (max-width: 1000px) {
+    .table-ad{min-width: 250vw;}
+  }
 .table-ad img{
     width:10vw;
     height: 10vh;
@@ -26,7 +32,13 @@
 ::-webkit-scrollbar-thumb{ 
     background-color: #d2cfcf;
 }
-
+/*main containers in dashboard*/
+.left-dash{
+    height: 90vh;
+}
+.right-dash .data{ 
+    height:30vh;
+}
 /** pagination */
 .pagination button{
     border: 1px solid lightgray;
@@ -35,14 +47,9 @@
 }
 
 /** dashboard */
-.child-one-dash{
-    max-height: 65vh;
-}
-.child-two-dash{
-    min-height: 50vh;
-}
-@media (min-width: 768px) {
+/*@media (min-width: 768px) {
     .child-one-dash{width: 17.5%;}
     .child-two-dash{width:80%}
     .child-two-dash .show{width: 24%;}
 }
+*/

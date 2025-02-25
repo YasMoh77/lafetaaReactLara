@@ -1,11 +1,11 @@
 
 import {useEffect,useState,useRef,useCallback} from 'react'
 import { useNavigate } from 'react-router'
-import {http,http4} from '../axios/axiosGlobal'
-import Pagination  from './pagination'
+import {http,http4} from '../../axios/axiosGlobal'
+import Pagination  from '../pagination'
 import axios  from 'axios'
 import { debounce } from 'lodash';
-import   './admin.css'
+import   '../admin.css'
 
 const Ads = ({hideFunc}) => {
    
@@ -523,7 +523,7 @@ const Ads = ({hideFunc}) => {
             <>
             <p>All ads ({total})</p>
             <div className='overflow-auto w-100 pb-5 table-ad-parent' >
-                <table className='mb-5 table-ad' >                   
+                <table className='mb-5 table-ad fs-6' >                   
                    <thead className='bg-info fw-bold'>
                         <tr >
                             <td>id</td>
@@ -565,7 +565,13 @@ const Ads = ({hideFunc}) => {
                             <td>{e.website}</td>
                             <td>{e.item_email}</td>
                             <td>{e.youtube}</td>
-                            <td>{e.approve==1? <><span className="green">shown</span><i title='return to Pending' className='bi bi-arrow-return-left hand ms-2' onClick={()=>{returnPendingFunc(e.item_id)}}></i></> :e.approve==0 ? <><span  className="red me-3">pending-new</span><span className='hand text-decoration-underline text-info' onClick={()=>{approveFunc(e.item_id)}}>Approve</span></> : <><span className="text-warning me-3">pending-modify</span><span className='hand text-decoration-underline text-info' onClick={()=>{approveFunc(e.item_id)}}>Approve  </span></>}</td>
+                            <td>
+                              {e.approve==1
+                                 ?<><span className="green">shown</span><i title='return to Pending' className='bi bi-x text-danger hand ms-2' onClick={()=>{returnPendingFunc(e.item_id)}}></i></> 
+                                 :e.approve==0 
+                                    ? <><span title="pending as it\'s new" className="red me-3">pending-new</span><span className='hand text-decoration-underline text-info' onClick={()=>{approveFunc(e.item_id)}}>Approve</span></>
+                                    : <><span title='pending as was modefied' className="text-warning me-2">pend-mod</span><span title='Approve again' className='hand text-decoration-underline text-info' onClick={()=>{approveFunc(e.item_id)}}>re-approve  </span></>}
+                            </td>
                             <td>{e.feature==2?'Gold':e.feature==1?'Silver':''}</td>
                             <td>{e.plan_until}</td>
                             <td>{e.userName}</td>

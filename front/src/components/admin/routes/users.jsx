@@ -1,9 +1,9 @@
 import { useEffect,useState,useRef } from 'react'
 import { useNavigate } from 'react-router'
 import axios  from 'axios'
-import {http} from '../axios/axiosGlobal' 
-import Pagination  from './pagination'
-import   './admin.css'
+import {http} from '../../axios/axiosGlobal' 
+import Pagination  from '../pagination'
+import   '../admin.css'
 
 const Users = ({hideFunc}) => {
     //receive hideFunc as a prop, load it with hide whose value is 1
@@ -42,7 +42,6 @@ const Users = ({hideFunc}) => {
     setCurrentPage(page)
    }
 
-
    //mark row
   const markRow=(ee)=>{
     if( ee.parentElement.style.backgroundColor=='orange'){
@@ -50,12 +49,27 @@ const Users = ({hideFunc}) => {
     }else{ ee.parentElement.style.backgroundColor='orange' }
   }
 
+   //block & unblock
    const block=async(id,block)=>{
-      const res=await http.post('panel/block',{id,block})
-      console.log(res.data)
-      alert(res.data.message)
-      window.location.reload()
+       const confirmBlock=window.confirm('Warning! You will BLOCK this user');
+       if(confirmBlock){
+            const res=await http.post('panel/block',{id,block})
+            //on finishing, show alert message 
+            alert(res.data.message)
+            window.location.reload()
+       }
    }
+
+      //unblock
+      const cancelBlock=async(id,block)=>{
+          const confirmCancel=window.confirm('Warning! You will CANCEL BLOCK this user');
+        if(confirmCancel){
+             const res=await http.post('panel/block',{id,block})
+             //on finishing, show alert message 
+             alert(res.data.message)
+             window.location.reload()
+        }
+    }
 
    //change users to admin, super admin or owner
    const adminFunc=async(val,id)=>{
@@ -118,7 +132,7 @@ const Users = ({hideFunc}) => {
                             {loginData.admin ==='sup'||loginData.admin ==='own' && // action ONLY allowed for super admins
                             (<td>
                                 {/* block user */}
-                               {e.block==1 ? <i title='cancel blocking' className='bi bi-lock me-5 p-1 bg-danger text-light' onClick={()=>{block(e.id,e.block)}} ></i> : <i title='block' className='bi bi-unlock me-5 p-1 bg-success text-light' onClick={()=>{block(e.id,e.block)}} ></i> }                       
+                               {e.block==1 ? <i title='cancel blocking' className='bi bi-lock me-5 p-1 bg-danger text-light' onClick={()=>{cancelBlock(e.id,e.block)}} ></i> : <i title='block' className='bi bi-unlock me-5 p-1 bg-success text-light' onClick={()=>{block(e.id,e.block)}} ></i> }                       
                                {/* delete user */}
                                <i title='delete' onClick={()=>{deleteItem(e.id)}} className='bi bi-trash me-5 bg-danger text-light p-1'></i>
                                 {/* promote user */}

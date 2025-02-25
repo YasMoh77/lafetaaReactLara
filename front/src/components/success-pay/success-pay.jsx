@@ -14,7 +14,7 @@ const SuccessPay = () => {
    
   //if tameez removed, go home
    useEffect(() => {
-     {!tameez && navigate('http://localhost:3000/profile/profileSigns')}
+     {!tameez && navigate('http://localhost:3000/profile')}
    }, [])
 
 

@@ -61,7 +61,7 @@ const More = () => {
         setLoadingSearch(true)
         const res=await http.post(`/ads/more`,{param,paramVal})
         setData(res.data.ads)
-        console.log(res.data.ads)
+        // store other data
         setShow(res.data.show)
         setAdsNum(res.data.adsNum)
         setDiv(res.data.div)
@@ -70,7 +70,7 @@ const More = () => {
         setLoadingSearch(true)
         const res=await http.post(`/ads/more`,{param,paramVal})
         setData(res.data.ads)
-        console.log(res.data.ads)
+        //console.log(res.data.ads)
         setShow(res.data.show)
         setAdsNum(res.data.adsNum)
         setDiv(res.data.div)
@@ -79,7 +79,7 @@ const More = () => {
         setLoadingSearch(true)
         const res=await http.post(`/ads/more`,{param,paramVal})
         setData(res.data.ads)
-        console.log(res.data.ads)
+       // console.log(res.data.ads)
         setShow(res.data.show)
         setAdsNum(res.data.adsNum)
         setDiv(res.data.div)
@@ -88,7 +88,7 @@ const More = () => {
         setLoadingSearch(true)
         const res=await http.post(`/ads/more`,{param,paramVal})
         setData(res.data.ads)
-        console.log(res.data.ads)
+        //console.log(res.data.ads)
         setShow(res.data.show)
         setAdsNum(res.data.adsNum)
         setDiv(res.data.div)
@@ -97,7 +97,7 @@ const More = () => {
         setLoadingSearch(true)
         const res=await http.post(`/ads/more`,{param,paramVal})
         setData(res.data.ads)
-        console.log(res.data.ads)
+        //console.log(res.data.ads)
         setShow(res.data.show)
         setAdsNum(res.data.adsNum)
         setDiv(res.data.div)
@@ -112,39 +112,32 @@ const More = () => {
 
     //load more ads
 const loadMore=async()=>{
-        //start spinner
+    //start spinner
     setLoadingMore(true)
     //increment currentPage
     const Page = currentPage + 1;
-    //check
-    if(query.has('ci')){
-        const city=query.get('ci')
-        // get More ads
-        const res=await http.post(`/ads/more`,{city,Page})
-        console.log('more=',Page,res.data)
-        const moreData=res.data.cities;
-        setData(prevData=> [...prevData, ...moreData])
-        //
-        setShow(res.data.show)
-        setAdsNum(res.data.adsNum)
-        setDiv(res.data.div)
-        //increment currentPage
-        setCurrentPage(Page); // Update current page
-         //end spinner
-         setLoadingMore(false)
-    }
+      //send data with (Page=currentPage + 1);
+      const res=await http.post(`/ads/more`,{param,paramVal,Page})
+      //store brought data
+      const moreData=res.data.ads;
+      //use old data + new data
+      setData(prevData=> [...prevData, ...moreData])
+      //increment currentPage
+      setCurrentPage(Page); // Update current page
+      //end spinner
+      setLoadingMore(false)
 }
 
 
     // enlarge image
     const enlargeFun=(src)=>{
         setEnlarge(src)
-        //document.querySelector('body').style.overflow='hidden';
+        document.querySelector('body').style.overflow='hidden';
     }
     // stop enlarge image
     const stopEnlargeFun=()=>{
         setEnlarge('');
-        //document.querySelector('body').style.overflow='initial';
+        document.querySelector('body').style.overflow='initial';
     }
 
     
@@ -153,13 +146,20 @@ const loadMore=async()=>{
     return (
       
         
-        <div className='minheight'>
+        <div className='fullheight'>
+          {/* enlarge images*/}
+          {enlarge && 
+             <div className="overlay">
+                <img src={enlarge}  alt="k" /> <i onClick={stopEnlargeFun} className="close-btn bi bi-x-square" ></i>
+             </div>
+          }
+                                
             {loadingSearch 
-            ? <div className='mx-auto w-fit'><p className='spinner-border gray'></p></div>
+            ? <div className='fullheight d-flex justify-content-center align-items-center'><p className='spinner-border gray large-spinner'></p></div>
             : data&&Array.isArray(data)&&data.length>0
                 ?
                     <div  className="container-fluid my-5">
-                        <p className="paid">  لافتات في {show} </p>
+                        <p className="d-inline-block fs-md-6 fs-5">  لافتات في {show} </p> <span className="d-inline-block small">({adsNum})</span> 
                         <div className="row">
                             <div id="sho"  className="d-flex flex-wrap show-wrapper justify-content-around col-sm-12">
                             { Array.isArray(data)&&data.length>0&&data.map((e)=>{ return(
@@ -168,13 +168,13 @@ const loadMore=async()=>{
                                     <GetCatSubcat cat={e.CAT_ID} sub={e.subcat_id} />
                                     <GetCountryStateCity country={e.country_id} state={e.state_id} city={e.city_id} />
                                     <div className='pe-1 mb-1 fw-bold text-muted text-truncate'>{e.NAME}</div>                                            
-                                    <div className='featured-icons-div d-flex px-1 justify-content-between'>
+                                    <div className='featured-icons-div d-flex px-1 justify-content-between fs-5 fs-md-6'>
                                         <div>
-                                            {e.phone != 0 ? <a href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a><i class="bi bi-telephone-fill empty"></i></a>} 
-                                            {e.whatsapp !=0 ? <a href={'https://wa.me/'+code(e.country_id)+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a><i class="bi bi-whatsapp empty"></i></a> } 
-                                            {e.website !='' ? <a href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a><i class="bi bi-globe-americas empty"></i></a>} 
-                                            {e.item_email !='' ? <a href={'mailto:'+e.item_email}><i class="bi bi-envelope-at-fill full-env"></i></a> : <a><i class="bi bi-envelope-at-fill empty"></i></a> } 
-                                            {e.youtube !='' ? <a href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a><i class="bi bi-youtube empty"></i></a> } 
+                                            {e.phone != 0 ? <a className='me-3' href={'tel:0'+e.phone}><i class="bi bi-telephone-fill full-tel"></i></a>  : <a className='me-3'><i class="bi bi-telephone-fill empty"></i></a>} 
+                                            {e.whatsapp !=0 ? <a className='me-3' href={'https://wa.me/'+code(e.country_id)+e.whatsapp}><i class="bi bi-whatsapp full-whats"></i></a> : <a className='me-3'><i class="bi bi-whatsapp empty"></i></a> } 
+                                            {e.website !='' ? <a className='me-3' href={e.website}><i class="bi bi-globe-americas full-globe"></i></a> :  <a className='me-3'><i class="bi bi-globe-americas empty"></i></a>} 
+                                            {e.item_email !='' ? <a className='me-3' href={'mailto:'+e.item_email}><i class="bi bi-envelope-at-fill full-env"></i></a> : <a className='me-3'><i class="bi bi-envelope-at-fill empty"></i></a> } 
+                                            {e.youtube !='' ? <a className='me-3' href={e.youtube}><i class="bi bi-youtube full-you"></i></a> : <a className='me-3'><i class="bi bi-youtube empty"></i></a> } 
                                         </div>
                                         {loginData ?  (<ShowSaved id={e.item_id} isSaved={savedStatuses[e.item_id] === 'saved'}/>) : (<Link to='/login'><i className='bi bi-heart align-self-center'></i></Link>) }
                                     </div>
@@ -183,7 +183,7 @@ const loadMore=async()=>{
                         </div>
                         {data && data.length>0 
                         ?  div && currentPage<div 
-                            ? (<button onClick={loadMore } className="btn btn-info w-25 mx-auto d-block " id="">  {loadingMore ? (<span className="spinner-border spinner" role="status" aria-hidden="true"></span>) : (<span>Load more</span>)} </button>) 
+                            ? (<button onClick={loadMore } className="btn btn-info w-fit px-4 mt-3 mx-auto d-block " id="">  {loadingMore ? (<div className='px-4'><p className="spinner-border spinner mb-0" role="status" aria-hidden="true"></p></div>) : (<span> تحميل المزيد</span>)} </button>) 
                             : (<p className="mx-auto w-fit red">نهاية النتائج</p>)
                         : (<span></span>)}
                     </div>    

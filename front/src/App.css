@@ -50,8 +50,13 @@
 .yellow{ color: #fbff05;}
 .white{ color: white;}
 .bg-yellow{background-color: yellow;}
-.small{font-size: 1.3vw;}
+.small{font-size: 1.2vw;}
+@media (max-width:767px){
+   .small{font-size: 3vw;}
+}
 .minheight{min-height: 75vh;}
+.fullheight{min-height: 100vh;}
+.large-spinner{width: 6rem;height: 6rem; border-width: .1rem;}
 :root{
 	--mainColor: #ffaa00;
 	--textColor:#0aadad;
@@ -65,9 +70,17 @@ body{
   margin-top: 20vh;
   padding-top: 3vh;
 }
-.container-fluid{
-  padding-right: 0;
-}
 .row-right-minus{
   margin-right: -2vw !important;
+}
+.no-row-m-p{
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+/**modal */
+.modal-body{
+  min-height: 20vh;
+  max-height: 50vh;
 }

@@ -1,8 +1,11 @@
 import { useState,useEffect } from 'react'
 import { Link, Route, Routes } from 'react-router-dom'
-import Ads from './Ads'
-import Users from './users'
-import Requests from './requests'
+//import hooks
+import Ads from './routes/Ads'
+import Users from './routes/users'
+import Requests from './routes/requests'
+import Comments from './routes/Comments'
+import Notes from './routes/notes'
 import   './admin.css'
 import { http } from '../axios/axiosGlobal'
 
@@ -16,7 +19,7 @@ function Dashboard() {
     //send api call to count ads and users
     const count=async()=>{
         const res=await http.post('panel/count-dashboard');
-        console.log(res.data)
+        //console.log(res.data)
         setAdsNum(res.data.ads)
         setUsersNum(res.data.users)
         setPlansNum(res.data.plans)
@@ -33,37 +36,38 @@ function Dashboard() {
 
 
     return (
-        <div className='container-fluid vh-100 ltr mb-5' >
+        <div className='ltr mb-5' >
             <p> Dashboard </p>
-            <div className='container-fluid d-flex vh-100'>
-                <div className='row col-md-12 justify-content-between mb-5'>
-                    <div className='child-one-dash bg-info me-1'>
-                        <ul className='list-unstyled'>
-                            <li><Link onClick={()=>{setHide(0)}} to='/dashboard'>Dashboard</Link></li>
-                            <li><Link onClick={()=>{setHide(1)}} to='ads'>Ads</Link></li>
-                            <li><Link onClick={()=>{setHide(1)}} to='users'>Users</Link></li>
-                            <li><Link onClick={()=>{setHide(1)}} to='requests'>Plan requests</Link></li>
-
-                            <li>Notes</li>
-
+            <div className='container-fluid d-flex '>
+                <div className='row col-md-12 justify-content-between mb-5 px-0 mx-auto'>
+                    <div className='left-dash col-2 bg-dark me-1'>
+                        <ul className='list-unstyled py-4'>
+                            <li className='pb-2'><Link onClick={()=>{setHide(0)}} to='/dashboard'>Dashboard</Link></li>
+                            <li className='pb-2'><Link onClick={()=>{setHide(1)}} to='ads'>Ads</Link></li>
+                            <li className='pb-2'><Link onClick={()=>{setHide(1)}} to='users'>Users</Link></li>
+                            <li className='pb-2'><Link onClick={()=>{setHide(1)}} to='requests'>Plan requests</Link></li>
+                            <li className='pb-2'><Link onClick={()=>{setHide(1)}} to='comments'>Comments</Link></li>
+                            <li className='pb-2'><Link onClick={()=>{setHide(1)}} to='notes'>Notes</Link></li>
                         </ul>
                     </div>
 
      
-                    <div className='container child-two-dash  me-1'>
-                        <div className='row h-100 justify-content-between'>
+                    <div className='right-dash col-9  me-1'>
+                        <div className='row h-100 justify-content-between '>
                             <Routes>
                                <Route path='ads'  element={<Ads hideFunc={hideFunc}/>} />
                                <Route path='users'  element={<Users hideFunc={hideFunc} />} />
                                <Route path='requests'  element={<Requests hideFunc={hideFunc} />} />
+                               <Route path='comments'  element={<Comments hideFunc={hideFunc} />} />
+                               <Route path='notes'  element={<Notes hideFunc={hideFunc} />} />
                             </Routes>
                             {!hide && 
-                            <>
-                                <div className='col-md-3 h-75 bg-success show white text-center'><p className='fs-2'>Ads</p> <p className='fs-3 '>{adsNum}</p></div>
-                                <div className='col-md-3 h-75 bg-danger show white text-center'>  <p className='fs-2'>Users</p> <p className='fs-3 '>{usersNum}</p></div>
-                                <div className='col-md-3 h-75 bg-dark show white text-center'>  <p className='fs-3'>Plan Request</p> <p className='fs-3 '>{plansNum}</p></div>
-                                <div className='col-md-3 h-75 bg-info show white text-center'>  Messages</div>
-                            </>
+                            <div className='data d-flex justify-content-between p-0'>
+                                <div className='col-md-3 bg-success show white text-center fs-4'><p>Ads</p> <p>{adsNum}</p></div>
+                                <div className='col-md-2 bg-danger show white text-center fs-4'>  <p>Users</p> <p>{usersNum}</p></div>
+                                <div className='col-md-4 bg-dark show white text-center fs-4'>  <p>Plan Requests</p> <p>{plansNum}</p></div>
+                                <div className='col-md-3 bg-info show white text-center fs-4'>  <p>comments</p></div>
+                            </div>
                             }
                         </div>
                     </div>

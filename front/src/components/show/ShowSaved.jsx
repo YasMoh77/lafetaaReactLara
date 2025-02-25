@@ -8,16 +8,16 @@ const ShowSaved = ({id,isSaved }) => {
     const loginData=JSON.parse(localStorage.getItem('loginData'));
     const userEmail=loginData.email;
     //save ad
-    const [savedAd, setSavedAd] = useState(isSaved ? 'red' : 'gray');
+    const [savedAd, setSavedAd] = useState(isSaved ? 'text-danger' : 'gray');
     const refI = useRef()      
 
    //save ads
     const saveFunc=async(id)=>{
-        refI.current.classList.toggle('red') 
+        refI.current.classList.toggle('text-danger') 
 
         const res=await http.post('/save',{id,userEmail});
         if(res.data.message=='saved'){
-            setSavedAd('red')
+            setSavedAd('text-danger')
         }else{
             setSavedAd('gray')
         }
@@ -25,16 +25,9 @@ const ShowSaved = ({id,isSaved }) => {
 
 
   return (
-    <>
-      {
-        loginData ? 
-        (
-            <i ref={refI} id={id} onClick={(e) => saveFunc(e.target.id)} className={`bi bi-heart align-self-center ${savedAd}`} ></i>
-        ) : (
-            <Link to='/login'> <i className='bi bi-heart align-self-center'></i> </Link>
-        )
-      }
-    </>
+    <div className='d-flex'>
+       <i ref={refI} id={id} onClick={(e) => saveFunc(e.target.id)} className={`bi bi-heart align-self-center ${savedAd}`} ></i>
+    </div>
   );
 
 }

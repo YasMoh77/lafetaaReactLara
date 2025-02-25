@@ -1,6 +1,7 @@
 import {useState,useEffect,useRef } from 'react'
 import { useNavigate } from 'react-router'
 import axios from 'axios'
+import { http,httpFile } from '../axios/axiosGlobal'
 import './add.css'
 
 const Add = () => {
@@ -37,38 +38,34 @@ const Add = () => {
         getCountries();
     }, [])
      
-    //get cats
+    //get cats 
     const getCats=async()=>{
-        const res=await axios.get('http://127.0.0.1:8000/api/cats');
+        const res=await http.post('/cats');
         setCats(res.data)
     }
+
     //get subcats
     const getSubCats=async(id)=>{
-        const postData={id};
-        const res=await axios.post('http://127.0.0.1:8000/api/subcats',postData);
+        const res=await http.post('/subcats',{id});
         setSubCats(res.data)
     }
     //get countries
     const getCountries=async()=>{
-        const res=await axios.get('http://127.0.0.1:8000/api/conts');
+        const res=await http.post('/conts');
         setConts(res.data)
     }
 
     //get states
     async function getStates(cont){
-    // prepare data to be sent
-     const postData={cont};
      //fetch states
-    const res=  await axios.post('http://127.0.0.1:8000/api/states',postData);
+    const res=  await http.post('/states',{cont});
     setStates(res.data);
     }
  
    //get states
    async function getCities(state){
-    // prepare data to be sent
-     const postData={state};
      //fetch states
-    const res=  await axios.post('http://127.0.0.1:8000/api/cities',postData);
+    const res=  await http.post('/cities',{state});
     setCities(res.data);
     }
    
@@ -116,8 +113,6 @@ const Add = () => {
         const emailSocial=refEmail.current.value;
         const youtube=refYoutube.current.value;
     // console.log(phone,whats,web,emailSocial,youtube)
-
-        
         //check if form values are valid
         showError(titleValue,'',title);
         showErrorTitle(titleValue,title);
@@ -133,26 +128,20 @@ const Add = () => {
         const postData={titleValue,catValue,subValue,countryValue,stateValue,cityValue,photoValue,email,phone,whats,web,emailSocial,youtube}
        
         //send values to backend
-        if(titleValue && titleValue.length>=5 && titleValue.length<=40  && catValue>0 && subValue>0 && countryValue>0 && stateValue>0 && phone  && showErrorPhone(phone)==null &&  cityValue>0 && photoValue!=null ){
+        if(titleValue && titleValue.length>=4 && titleValue.length<=40  && catValue>0 && subValue>0 && countryValue>0 && stateValue>0 && phone  && showErrorPhone(phone)==null &&  cityValue>0 && photoValue!=null ){
             //console.log('ph='+email,'showerr='+showErrorPhone())
 
             try{
                 setResponseOk('')
                 setResponseError('')
                 setLoadingAdd(true);
-              const res= await axios.post('http://127.0.0.1:8000/api/ads/store',postData,{
-                    headers:{
-                        'Content-Type': 'multipart/form-data',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    withCredentials:true
-                });
-
+              /*const res= await httpFile.post('/ads/store',postData);
+                 //store response
                 setResponseOk(res.data.msg)
                 setLoadingAdd(false)
                 setTimeout(() => {
                    navigate('/');
-                }, 3000);
+                }, 3000);*/
             }catch (error) {
                 setLoadingAdd(false)
                 error.response ? setResponseError(error.response.data.errors) :setResponseError('');
@@ -173,34 +162,43 @@ const Add = () => {
             <form onSubmit={submitAddFunc} className='mx-auto  form-add rounded-4'>
                  <p className="w-fit mx-auto fw-bold fs-2">أضف لافتـــة </p>
                 <div className="input-cont d-flex ">
-                    <label htmlFor="title" className="form-label">العنوان</label>
-                    <input type="text"  ref={title} className="form-control title-add" id="title" placeholder="أكتب عنوان اللافتة"/>
+                    <label htmlFor="title" className="form-label w-25">العنوان</label>
+                    <input type="text"  ref={title} className="form-control w-75" id="title" placeholder="أكتب عنوان اللافتة"/>
                 </div>
                 <small ref={refSmall} className='d-block w-fit mx-auto mb-3' >5 - 40 حرف</small>
 
-                <div className="input-cont mb-3 d-flex ">
-                    <label htmlFor="cat" className="form-label">التصنيف</label>
-                    <select ref={cat} onChange={(e)=>{getSubCats(e.target.value)}} className="form-select" id='cat' aria-label="Default select example">
+                <div className="input-con mb-3 d-flex">
+                    <label htmlFor="cat" className="form-label w-25 ">التصنيف</label>
+                    {!cats 
+                     ?<div className='w-2 mx-auto w-fit'><p className='spinner-border '></p></div>
+                     :<select ref={cat} onChange={(e)=>{getSubCats(e.target.value)}}  className="form-select w-75" id='cat' aria-label="Default select example">
                         <option value='0'> اختر تصنيف</option>
-                        {cats&& cats.length>0 ? cats.map((e,index)=>(
-                             <option key={index} value={e.cat_id}>{e.nameAR}</option>
-                        )) : 'no cats'}
-                    </select>
+                        {cats&& cats.length>0 
+                           ? cats.map((e,index)=> <option key={index} value={e.cat_id}>{e.nameAR}</option>)
+                           : 'no cats'
+                        }
+                     </select>   
+                    }
                 </div>
 
                 <div className="input-cont mb-3 d-flex ">
-                    <label htmlFor="sub" className="form-label">التصنيف الفرعي</label>
-                    <select ref={sub} className="form-select" aria-label="Default select example" id='sub'>
-                        <option value='0'> اختر تصنيف فرعي</option>
-                        {subCats&& subCats.length>0 ? subCats.map((e,index)=>(
-                             <option key={index} value={e.subcat_id}>{e.subcat_nameAR}</option>
-                        )) : 'no cats'}
-                    </select>
+                    <label htmlFor="sub" className="form-label w-25">التصنيف الفرعي</label>
+                    {!subCats 
+                     ?<div className='w-2 mx-auto w-fit'><p className='spinner-border '></p></div>
+                     :<select ref={sub} className="form-select w-75" id='cat' aria-label="Default select example">
+                        <option value='0'> اختر تصنيف فرعي </option>
+                        {subCats&& subCats.length>0 
+                           ? subCats.map((e,index)=> <option key={index} value={e.subcat_id}>{e.subcat_nameAR}</option>)
+                           : 'no subcats'
+                        }
+                     </select>
+                    }
+                    
                 </div>
 
                 <div className="input-cont mb-3 d-flex ">
-                    <label htmlFor="country" className="form-label">الدولة</label>
-                    <select ref={country} onChange={(e)=>{getStates(e.target.value);setCities('');  }} className="form-select" id='country' aria-label="Default select example">
+                    <label htmlFor="country" className="form-label w-25">الدولة</label>
+                    <select ref={country} onChange={(e)=>{getStates(e.target.value);setCities('');  }} className="form-select w-75" id='country' aria-label="Default select example">
                         <option value='0'>اختر دولة</option>
                         {conts&& conts.length>0 ? conts.map((e,index)=>(
                              <option key={index} value={e.country_id}>{e.country_nameAR}</option>
@@ -209,8 +207,8 @@ const Add = () => {
                 </div>
 
                 <div className="input-cont mb-3 d-flex ">
-                    <label htmlFor="state" className="form-label">المحافظة</label>
-                    <select ref={state} onChange={(e)=>{getCities(e.target.value)}} className="form-select" id='state' aria-label="Default select example">
+                    <label htmlFor="state" className="form-label w-25">المحافظة</label>
+                    <select ref={state} onChange={(e)=>{getCities(e.target.value)}} className="form-select w-75" id='state' aria-label="Default select example">
                         <option value='0'>اختر محافظة</option>
                         {states&& states.length>0 ? states.map((e,index)=>(
                              <option key={index} value={e.state_id}>{e.state_nameAR}</option>
@@ -219,8 +217,8 @@ const Add = () => {
                 </div>
 
                 <div className="input-cont mb-3 d-flex ">
-                    <label htmlFor="city" className="form-label">المدينة</label>
-                    <select ref={city} className="form-select" aria-label="Default select example" id='city'>
+                    <label htmlFor="city" className="form-label w-25">المدينة</label>
+                    <select ref={city} className="form-select w-75" aria-label="Default select example" id='city'>
                         <option value='0'>اختر مدينة</option>
                         {cities&& cities.length>0 ? cities.map((e,index)=>(
                              <option key={index} value={e.city_id}>{e.city_nameAR}</option>
@@ -229,52 +227,45 @@ const Add = () => {
                 </div>
 
                 <div className="input-cont mb-3 d-flex">
-                        <label htmlFor="phone" className="form-label">تليفون محمول </label>
-                        <input type="text" id='phone' ref={refPhone}  className="form-control phone-add" placeholder='أدخل رقم المحمول' />
+                        <label htmlFor="phone" className="form-label w-25">تليفون محمول </label>
+                        <input type="text" id='phone' ref={refPhone}  className="form-control w-75" placeholder='أدخل رقم المحمول' />
                 </div>
 
                 <div className="input-cont mb-3 d-flex ">
-                    <label htmlFor="photo" className="form-label">أضف صورة</label>
-                    <input type="file" id='photo' ref={photo} className="form-control photo-add"  />
+                    <label htmlFor="photo" className="form-label w-25">أضف صورة</label>
+                    <input type="file" id='photo' ref={photo} className="form-control w-75"  />
                 </div>
 
                
 
-               <div className='social-div py-4 my-5 ps-2 rounded-2'>
+               <div className='bg-secondary py-4 my-5 ps-2 rounded-2'>
                     <p className='w-fit mx-auto fs-4 fw-bold'>حقول اختيارية</p>
-                   
                     <div className="input-cont d-flex pe-2">
-                        <label htmlFor="whats" className="form-label"> واتس اب </label>
+                        <label htmlFor="whats" className="form-label w-25"> واتس اب </label>
                         <input type="text" id='whats' ref={refWhats} className="form-control" placeholder=' أدخل رقم واتساب مع رمز الدولة' />
                     </div>
                     <small className='d-block w-fit mx-auto mb-3' >مثال: 201012345678</small>
 
-
                     <div className="input-cont d-flex pe-2">
-                        <label htmlFor="web" className="form-label">موقع الكتروني </label>
+                        <label htmlFor="web" className="form-label w-25">موقع الكتروني </label>
                         <input type="text" id='web' ref={refWeb} className="form-control" placeholder='  أدخل رابط موقعك الالكتروني' />
                     </div>
                     <small className='d-block w-fit mx-auto mb-3' > يبدأ بـ https://www  أو http://www</small>
 
-
                     <div className="input-cont d-flex pe-2">
-                        <label htmlFor="email" className="form-label">بريد الكتروني </label>
+                        <label htmlFor="email" className="form-label w-25">بريد الكتروني </label>
                         <input type="text" id='email' ref={refEmail} className="form-control" placeholder='أدخل بريدك الالكتروني' />
                     </div>
                     <small className='d-block w-fit mx-auto mb-3' >مثال: example@gmail.com</small>
 
-
                     <div className="input-cont d-flex pe-2">
-                        <label htmlFor="youtube" className="form-label">قناة يوتيوب  </label>
+                        <label htmlFor="youtube" className="form-label w-25">قناة يوتيوب  </label>
                         <input type="text" id='youtube' ref={refYoutube} className="form-control" placeholder=' أدخل رابط قناتك على توتيوب' />
                     </div>
                     <small className='d-block w-fit mx-auto mb-3' > يبدأ بـ https://www  أو http://www</small>
-
                 </div>
 
-
-                <button type="submit" className="btn btn-primary mx-auto w-25 d-block">أرسل</button>
-                {loadingAdd && (<p className='w-fit mt-2 mx-auto'><span className='spinner-border gray '></span></p>)}
+                <button type="submit" className="btn btn-primary mx-auto w-25 d-flex justify-content-center align-items-center">{loadingAdd ? <span className='spinner-border gray '></span>:'أرسل'}</button>
                 {responseOk && (<p className="w-fit mx-auto mt-4 fw-bold">{responseOk}</p>) }              
                {responseError && Object.keys(responseError).map((key)=>(
                    <div className='mt-3 '>

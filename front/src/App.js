@@ -1,8 +1,10 @@
-import './App.css';
 import { Routes, Route } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';//with Popper.js
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import Exports from './components/export/export';
+import './App.css';
+
 
 
 const {Nav,About,Faq,More,Show,Register,Verify,Verified,Login,RequestReset,Forgetpassword,Profile,Add,Dashboard,SuccessPay
@@ -38,3 +40,4 @@ function App() {
 }
 
 export default App;
+

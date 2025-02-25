@@ -11,7 +11,7 @@ export const   http=axios.create({
     }) 
     
     //for requests with files to api
-export const   http2=axios.create({
+export const   httpFile=axios.create({
         baseURL:'http://127.0.0.1:8000/api',
         headers:{
             'Content-Type': 'multipart/form-data',

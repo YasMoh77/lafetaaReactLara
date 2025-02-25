@@ -2,8 +2,6 @@
 .navbar{
 	height: 15vh;
 	/*background: var(--mainColor) !important;*/
-  margin-left: 1.1vw;
-  margin-right: 0.2vw;
   box-shadow: 0px 2px 6px 4px #ededed;
 }
 .navbar-brand{
@@ -24,9 +22,6 @@
 .navbar-nav .nav-link,.navbar-nav .nav-link.active{
 	color:var(--textColor);
 	font-weight: bold;
-}
-.navbar-nav .nav-link.active{
-	 border-bottom: white solid;
 }
   .bg-body-tertiary{
     background-color: #fcfdfd !important;
