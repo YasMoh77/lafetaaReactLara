@@ -10,7 +10,12 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Plan;
 use App\Models\Ad;
 use App\Models\User; 
-use App\Models\Favourite; 
+use App\Models\Favourite;  
+use App\Models\Category;
+use App\Models\subCategory;
+use App\Models\Country;
+use App\Models\State;
+use App\Models\City;
 use App\Events\VerifyEvent;
 use Illuminate\Support\Facades\Crypt;
 use Carbon\Carbon;
@@ -152,20 +157,27 @@ class apiController extends Controller
 
 
     
-    //show paid ads on homepage
-    public function paidAds($key)
+    //show featured ads on homepage
+    public function featuredAds() 
     {
-       if($key==123){
-          $data=Ad::where('feature',2)->orderBy('item_id','DESC')->get();
-          return json_encode($data);
-       }else{
-          return json_encode(['msg'=>'You are not allowed']);
-       }
+       //get 8 featured ads only
+        $featured=Ad::where('feature',2)->orderBy('item_id','DESC')->limit(8)->get();
+        //if there are featured ads, send them in an array
+        if($featured){
+            return response()->json([
+                'featured'=>$featured
+            ]);
+            //or send empty array
+        }else{
+            return response()->json([
+            'featured'=>[]
+            ]);
+        }
     }
 
    
-    //get latest ads
-    public function latest()
+    //get 9 latest ads (ordinary not featured)
+    public function latest() 
     {
        $latest= Ad::orderBy('item_id','DESC')->limit(9)->get();
        return json_encode($latest);
@@ -190,7 +202,8 @@ class apiController extends Controller
                     return response()->json(['notice'=>'success','message'=>$featured]);
               }else{return response()->json(['notice'=>'fail','message'=>'SORRY, Item NOT found']);}
 
-        }else{
+        }else{ 
+            //user sent the promotion request
             $adDetail= Ad::where('item_id',$request->id)->first();
             $name=$adDetail->NAME;
             $feature=$adDetail->feature;
@@ -219,12 +232,10 @@ class apiController extends Controller
             //now
             $now=Carbon::now();
 
-
-          //there's already a request to promote ad 
+          //there's already a previous request to promote ad 
          if($foundPlan){ 
-                return response()->json(['message'=>'تم تقديم طلب تمييز من قبل']);
-            
-         }else{  // no request made
+                return response()->json(['message'=>'تم تقديم طلب تمييز من قبل وجاري فحصه']);
+         }else{  // no previous request made
 
                 if($feature==0){ //ad has no plan
                         if($request->pay==1){ //vodafone cash
@@ -255,10 +266,12 @@ class apiController extends Controller
                             return response()->json(['redirectVisa' =>'redirectVisa' ]);                
                         }
 
-                }elseif($feature==1 && $request->plan==2){ //feature==1 means silver plan, $request->plan==2 means silver plan
+                //feature==1 means already has silver plan, $request->plan==2 means user wants silver plan
+                }elseif($feature==1 && $request->plan==2){ 
                     return response()->json(['message'=>'مميز بالفعل بالباقة الفضية']);
-            
-                }elseif($feature==1 && $request->plan==1){ //feature==1 means silver plan, $request->plan==1 means gold plan(with silver plan but wants gold plan)
+
+                //feature==1 means already has silver plan, $request->plan==1 means user wants gold plan(with silver plan but wants gold plan)
+                }elseif($feature==1 && $request->plan==1){ 
                         //  /
                         if($request->pay==1){ //vodafone cash
                             //insert in plan table
@@ -286,14 +299,13 @@ class apiController extends Controller
                         }elseif($request->pay==4){ //visa 
                             return response()->json(['redirectVisa' =>'redirectVisa' ]);                
                         }
-            
-                }elseif($feature==2 && $request->plan==1 || $feature==2 && $request->plan==2){ //feature==1 means silver plan, $request->plan==2 means silver plan
+                 
+                 //feature==1 means silver plan, $request->plan==2 means silver plan
+                }elseif($feature==2 && $request->plan==1 || $feature==2 && $request->plan==2){ 
                     return response()->json(['message'=>'مميز بالفعل بالباقة الذهبية']);
                 }
             }
-
         }//end if
-
     }
 
 
@@ -369,132 +381,113 @@ class apiController extends Controller
     //get user's favourite ads
     public function favourites(Request $request)
     {
-       $adsPerPage = 9; // Number of ads per page
+       $adsPerPage = 6; // Number of ads per page
        $pageNum=$request->Page ? $request->Page : 1;
-       $startFrom = ($pageNum - 1) * $adsPerPage;// Starting point for pagination
+       $startFrom = ($pageNum - 1) * $adsPerPage;
+       // get user id
        $user=User::where('email',$request->email)->value('id');
+       //gather favorite ads
+       $favouriteAds=Favourite::where('user_id',$user)->pluck('item_id')->toArray();
+       if($favouriteAds){
+            $placeholders=implode(',',array_fill(0,count($favouriteAds),'?'));
+            //query
+            $query="
+                    SELECT * from ads
+                    where  approve=1 and item_id IN ($placeholders)
+                    ORDER BY feature DESC, item_id DESC  
+                    LIMIT ?, ? ";
+            //bindings
+            $bindings=array_merge($favouriteAds,[ $startFrom,$adsPerPage]);
+            $data=DB::select($query,$bindings);
+            // get ads number
+            $adsTotalNumber=Ad::where(['USER_ID'=>$user,'approve'=>1])->whereIn('item_id',$favouriteAds)->count();
+            //return response
+                if(empty($data)){
+                    $response = [
+                        'data' => $data=[],
+                        'free'=>' نتائج البحث ',
+                        'msg'=>'لا توجد نتائج بحث',
+                        'adsNum' => ' الاعلانات المحفوظة: 0',
+                    ];
+                    return response()->json($response);
 
-       $data=DB::select('
-       select * from ads
-       join favourite
-       on favourite.item_id=ads.item_id
-       and favourite.user_id=ads.USER_ID
-      
-       where ads.USER_ID= :user
-
-        and ads.approve=1
-        ORDER BY ads.feature DESC, ads.item_id DESC  
-        LIMIT :startFrom, :adsPerPage
-       
-       ',[  
-            'user' => $user,
-            'startFrom' => $startFrom,
-            'adsPerPage' => $adsPerPage
-       ]);
-
-        $adsTotalNumber=DB::table('favourite')->where('user_id',$user)->count();
-
-        if(empty($data)){
-            $data=[];
-            $msg='لا توجد نتائج بحث';
-            $adsTotalNumber=0;
+                }else{
+                    $response = [
+                        'data' => $data,
+                        'div' => ($adsTotalNumber/6),
+                        'free'=>'  نتائج البحث ',
+                        'adsNum' => ' الاعلانات المحفوظة: '.$adsTotalNumber,
+                        ];
+                    return response()->json($response);       
+                } 
+       }else{
             $response = [
-                'data' => $data,
+                'data' => $data=[],
                 'free'=>' نتائج البحث ',
-                'msg'=>$msg,
-                'adsNum' => ' الاعلانات المحفوظة: '.$adsTotalNumber,
+                'msg'=>'لا توجد نتائج بحث',
+                'adsNum' => ' الاعلانات المحفوظة: 0',
             ];
             return response()->json($response);
-
-        }else{
-                $response = [
-                    'data' => $data,
-                    'div' => ($adsTotalNumber/9),
-                    'free'=>'  نتائج البحث ',
-                    'adsNum' => ' الاعلانات المحفوظة: '.$adsTotalNumber,
-                    ];
-            return response()->json($response);       
-        }  
-
+       }
 
     }
 
-     
-
-
+    
     
     //searched ads in homepage
     public function search(Request $request)
     {
-       
         //if($key==123){
-       $adsPerPage = 9; // Number of ads per page
+       $adsPerPage = 6; // Number of ads per page
        $pageNum=$request->Page ? $request->Page : 1;
        $startFrom = ($pageNum - 1) * $adsPerPage;// Starting point for pagination
        $searchWord=$request->search;
-       $query=$request->search  ? "AND (ads.NAME LIKE '%$request->search%' OR ads.NAME LIKE '%$request->search') " : '';
+       //prepare query
+       $searchQuery="AND (NAME LIKE ? OR NAME LIKE ? ) ";
+       $bindSearchQuery=["%$searchWord%","%$searchWord"];
 
        if( $request->countryValue>0 && $request->stateValue>0  && $request->cityValue>0){
         // Fetch paginated results using raw SQL query with Laravel DB facade
-            $data = DB::select("
-                SELECT *
-                FROM ads
-                JOIN categories ON categories.cat_id = ads.CAT_ID 
-                JOIN sub ON ads.subcat_id = sub.subcat_id 
-                JOIN country ON ads.country_id = country.country_id
-                JOIN state ON ads.state_id = state.state_id
-                JOIN city ON ads.city_id = city.city_id
-                WHERE country.country_id = :country_id
-                AND state.state_id = :state_id
-                AND city.city_id = :city_id
-                AND categories.cat_id > 0
-                AND sub.subcat_id > 0
-                AND ads.approve = 1 
-                $query 
+            $query = "
+                SELECT * FROM ads
+                WHERE country_id = ?
+                AND state_id = ?
+                AND city_id = ?
+                AND CAT_ID > 0
+                AND subcat_id > 0
+                AND approve = 1 
+                $searchQuery 
                 ORDER BY feature DESC, item_id DESC  
-                LIMIT :startFrom, :adsPerPage
-            ", [
-                    'country_id' => $request->countryValue,
-                    'state_id' => $request->stateValue,
-                    'city_id' => $request->cityValue,
-                    'startFrom' => $startFrom,
-                    'adsPerPage' => $adsPerPage
-            ]);
-
-            // Optionally, get the total number of ads if you need it for pagination or other logic        
+                LIMIT ?,?
+            ";
+            //bind values
+            $bindings=array_merge([$request->countryValue],[$request->stateValue],[$request->cityValue],$bindSearchQuery,[$startFrom],[$adsPerPage]);
+            $data=DB::select($query,$bindings);
+             // get the total number of ads        
             $request->search 
             ?  $adsTotalNumber = DB::table('ads')->where(['country_id'=> $request->countryValue,'state_id'=> $request->stateValue,'city_id'=> $request->cityValue])->where('approve', 1)->where(function($quer) use ($searchWord){$quer->where('NAME','LIKE','%'.$searchWord.'%')->orWhere('NAME','LIKE','%'.$searchWord);})->count() 
             :  $adsTotalNumber = DB::table('ads')->where(['country_id'=> $request->countryValue,'state_id'=> $request->stateValue,'city_id'=> $request->cityValue])->where('approve', 1)->count()   ;
            
-            
 
       }elseif( $request->countryValue>0 &&  $request->stateValue>0  && $request->cityValue==0){
-        // Fetch paginated results using raw SQL query with Laravel DB facade
-       $data = DB::select("
-            SELECT *
-            FROM ads
-            JOIN categories ON categories.cat_id = ads.CAT_ID 
-            JOIN sub ON ads.subcat_id = sub.subcat_id 
-            JOIN country ON ads.country_id = country.country_id
-            LEFT JOIN state ON ads.state_id = state.state_id
-            LEFT JOIN city ON ads.city_id = city.city_id
-            WHERE country.country_id = :country_id
-            AND state.state_id = :state_id
-            AND city.city_id > 0
-            AND categories.cat_id > 0
-            AND sub.subcat_id > 0
-            AND ads.approve = 1 
-            $query
+            // Fetch paginated results using raw SQL query with Laravel DB facade
+            $query = "
+            SELECT * FROM ads
+            WHERE country_id = ?
+            AND state_id = ?
+            AND city_id > 0
+            AND CAT_ID > 0
+            AND subcat_id > 0
+            AND approve = 1 
+            $searchQuery 
             ORDER BY feature DESC, item_id DESC  
-            LIMIT :startFrom, :adsPerPage
-       ", [
-            'country_id' => $request->countryValue,
-            'state_id' =>  $request->stateValue,
-            'startFrom' => $startFrom,
-            'adsPerPage' => $adsPerPage
-      ]);
+            LIMIT ?,?
+        ";
 
-      // Optionally, get the total number of ads if you need it for pagination or other logic
+        $bindings=array_merge([$request->countryValue],[$request->stateValue],$bindSearchQuery,[$startFrom],[$adsPerPage]);
+        $data=DB::select($query,$bindings);
+
+      // get the total number of ads 
       $request->search 
         ?  $adsTotalNumber = DB::table('ads')->where(['country_id'=> $request->countryValue,'state_id'=> $request->stateValue])->where('approve', 1)->where(function($quer) use ($searchWord){$quer->where('NAME','LIKE','%'.$searchWord.'%')->orWhere('NAME','LIKE','%'.$searchWord);})->count() 
         :  $adsTotalNumber = DB::table('ads')->where(['country_id'=> $request->countryValue,'state_id'=> $request->stateValue])->where('approve', 1)->count()   ;
@@ -502,50 +495,40 @@ class apiController extends Controller
 
      } elseif( $request->countryValue>0 && $request->stateValue==0 && $request->cityValue==0){
         // Fetch paginated results using raw SQL query with Laravel DB facade
-       $data = DB::select("
-            SELECT *
-            FROM ads
-            JOIN categories ON categories.cat_id = ads.CAT_ID 
-            JOIN sub ON ads.subcat_id = sub.subcat_id 
-            JOIN country ON ads.country_id = country.country_id
-            LEFT JOIN state ON ads.state_id = state.state_id
-            LEFT JOIN city ON ads.city_id = city.city_id
-            WHERE country.country_id = :country_id
-            AND state.state_id > 0
-            AND city.city_id > 0
-            AND categories.cat_id > 0
-            AND sub.subcat_id > 0
-            AND ads.approve = 1 
-            $query
-            ORDER BY ads.feature DESC, ads.item_id DESC  
-            LIMIT :startFrom, :adsPerPage
-      ", [
-            'country_id' => $request->countryValue,
-            'startFrom' => $startFrom,
-            'adsPerPage' => $adsPerPage
-     ]);
+            $query = "
+            SELECT * FROM ads
+            WHERE country_id = ?
+            AND state_id > 0
+            AND city_id > 0
+            AND CAT_ID > 0
+            AND subcat_id > 0
+            AND approve = 1 
+            $searchQuery 
+            ORDER BY feature DESC, item_id DESC  
+            LIMIT ?,?
+        ";
+        
+        $bindings=array_merge([$request->countryValue],$bindSearchQuery,[$startFrom],[$adsPerPage]);
+        $data=DB::select($query,$bindings);
 
-       // Optionally, get the total number of ads if you need it for pagination or other logic
+        // get the total number of ads 
        $request->search 
        ?  $adsTotalNumber = DB::table('ads')->where(['country_id'=> $request->countryValue])->where('approve', 1)->where(function($quer) use ($searchWord){$quer->where('NAME','LIKE','%'.$searchWord.'%')->orWhere('NAME','LIKE','%'.$searchWord);})->count() 
        :  $adsTotalNumber = DB::table('ads')->where(['country_id'=> $request->countryValue])->where('approve', 1)->count()   ;                
      } 
     
      if(empty($data)){
-            $data=[];
-            $msg='لا توجد نتائج بحث';
-            $adsTotalNumber=0;
             $response = [
-                'data' => $data,
+                'data' => $data=[],
                 'free'=>' نتائج البحث ',
-                'msg'=>$msg,
-                'adsNum' => 'عدد الاعلانات: '.$adsTotalNumber,
+                'msg'=>'لا توجد نتائج بحث',
+                'adsNum' => 'عدد الاعلانات: 0'
                 ];
             return response()->json($response);
        }else{
             $response = [
                 'data' => $data,
-                'div' => ($adsTotalNumber/9),
+                'div' => ($adsTotalNumber/6),
                 'free'=>'  نتائج البحث ',
                 'adsNum' => 'عدد الاعلانات: '.$adsTotalNumber,
                 'word'=>$request->search
@@ -556,126 +539,147 @@ class apiController extends Controller
 
 
 
-
-    //search user's ads in profile
-    public function searchWord(Request $request)
+    //search user's ads in profile using input
+    public function searchWordAds(Request $request)
     {
-
-       $adsPerPage = 9; // Number of ads per page
+       $adsPerPage = 6; // Number of ads per page
        $pageNum=$request->Page ? $request->Page : 1;
        $startFrom = ($pageNum - 1) * $adsPerPage;// Starting point for pagination
+       //if email is found, search based on user id
        $user=User::where('email',$request->email)->value('id');
+        //use this query to match search word
+       $word=$request->word;
        $query=$request->word  ? "AND ads.NAME LIKE '%$request->word%' OR ads.NAME LIKE '%$request->word' " : ''; //
-
        //////////
        // Fetch paginated results using raw SQL query with Laravel DB facade
-       $data = DB::select("
-            SELECT *
-            FROM ads
-            where approve = 1 
+            $data = DB::select("
+            SELECT * FROM ads where approve = 1 
             and USER_ID= :user
             $query
             ORDER BY feature DESC, item_id DESC  
             LIMIT :startFrom, :adsPerPage
-
-           ", [
-
+            ", [
             'user' => $user,
             'startFrom' => $startFrom,
             'adsPerPage' => $adsPerPage
-     ]);
+            ]);
 
-       // Optionally, get the total number of ads if you need it for pagination or other logic
-      $request->word 
-      ?  $adsTotalNumber = DB::table('ads')->where('NAME','LIKE','%'.$request->word.'%')->orWhere('NAME','LIKE','%'.$request->word)->where(['approve'=> 1,'USER_ID'=>$user])->count() 
-      :  $adsTotalNumber = DB::table('ads')->where('approve', 1)->count()   ; //
-              
+            // Optionally, get the total number of ads if you need it for pagination or other logic
+            $word 
+            ?  $adsTotalNumber = DB::table('ads')->where(function($q) use($word){
+                $q->where('NAME','LIKE','%'.$word.'%')->orWhere('NAME','LIKE','%'.$word);
+            })->where(['approve'=> 1,'USER_ID'=>$user])->count()
+            :  $adsTotalNumber = DB::table('ads')->where('approve', 1)->count()   ; //
+            
        if(empty($data)){
-        $data=[];
-        $msg='لا توجد نتائج بحث';
-        $adsTotalNumber=0;
-        $response = [
-            'data' => $data,
-            'free'=>' نتائج البحث ',
-            'msg'=>$msg,
-            'adsNum' => 'عدد الاعلانات: '.$adsTotalNumber,
-            ];
-           return response()->json($response);
+            //no search result
+            $data=[];
+            $msg='لا توجد نتائج بحث';
+            $adsTotalNumber=0;
+            $response = [
+                'userAds' => $data,
+                'free'=>' نتائج البحث ',
+                'msg'=>$msg,
+                'adsNum' => 'عدد الاعلانات: '.$adsTotalNumber,
+                ];
+                
+            return response()->json($response);
+        //search result
         }else{
-                $response = [
-                    'data' => $data,
-                    'div' => ($adsTotalNumber/9),
-                    'free'=>'  نتائج البحث ',
-                    'adsNum' => 'عدد الاعلانات: '.$adsTotalNumber,
-                    'word'=>$request->word
-                    ];
+            $response = [
+                'userAds'=>$data,
+                'div' => ($adsTotalNumber/6),
+                'free'=>'  نتائج البحث ',
+                'adsNum' => 'عدد الاعلانات: '.$adsTotalNumber,
+                'word'=>$request->word
+                ];
+                
             return response()->json($response);       
         }  
-
     }
 
 
-
-
-    //get states
-    public function states(Request $request)
-     {
-        if ($request->cont > 0 ) {
-            $data = DB::select("
-                SELECT state.*, country.* FROM state
-                JOIN country ON country.country_id = state.country_id
-                WHERE country.country_id = :country
-            ", ['country' => $request->cont]);
-
-            return response()->json($data); // Ensure JSON response
-        }
-        $data=[];
-        return response()->json($data); // Handle invalid input
-     }
-
-
-
-
-     //get cities
-    public function cities(Request $request)
+    //////////&&&&&&&&&&&&&&&&&&&&
+    //search user's favourites in profile using input
+    public function searchWordFavourites(Request $request)
     {
-        if ($request->state > 0 ) {
-            $data = DB::select("
-                SELECT state.*, city.* FROM city
-                JOIN state ON state.state_id = city.state_id
-                WHERE state.state_id = :state
-            ", ['state' => $request->state]);
+       $adsPerPage = 6; // Number of ads per page
+       $pageNum=$request->Page ? $request->Page : 1;
+       $startFrom = ($pageNum - 1) * $adsPerPage;// Starting point for pagination
+       //if email is found, search based on user id
+       $user=User::where('email',$request->email)->value('id');
+       //gather all favourite ads
+       $favouriteAds=Favourite::where('user_id',$user)->pluck('item_id')->toArray();
+       //prepare for query
+       $placeholders=implode(',',array_fill(0,count($favouriteAds),'?'));
+       //use this query to match search word
+       $word=$request->word;
+       $searchCondition="AND (NAME LIKE ? OR NAME LIKE ?) ";
+       $searchBindings=["%$word%","%$word"];
+       //$query=$request->word  ? "AND NAME LIKE '%$request->word%' OR NAME LIKE '%$request->word' " : ''; //
+       
+       //search user's favourites in profile using input & Fetch paginated results using raw SQL query with Laravel DB facade
+        $query="
+        SELECT * FROM ads where approve = 1 
+        and item_id IN ($placeholders) 
+        $searchCondition
+        ORDER BY feature DESC, item_id DESC  
+        LIMIT ?, ?";
+        $bindings=array_merge($favouriteAds,$searchBindings,[$startFrom,$adsPerPage]);
+        $data = DB::select($query,$bindings);
 
-            return response()->json($data); // Ensure JSON response
-        }
-        //  $data=[];
-        //  return response()->json($data); // 
+        // get the total number of ads 
+        $word 
+        ?  $adsTotalNumber = Ad::where(function($q) use($word){
+            $q->where('NAME','LIKE','%'.$word.'%')->orWhere('NAME','LIKE','%'.$word);
+        })->where(['approve'=> 1,'USER_ID'=>$user])->whereIn('item_id',$favouriteAds)->count()
+        :  $adsTotalNumber = Ad::where(['approve'=> 1,'USER_ID'=>$user])->whereIn('item_id',$favouriteAds)->count()   ; //
+          
+       if(empty($data)){
+            //no search result
+            $data=[];
+            $msg='لا توجد نتائج بحث';
+            $adsTotalNumber=0;
+            $response = [
+                'favourites' => $data,
+                'free'=>' نتائج البحث ',
+                'msg'=>$msg,
+                'adsNum' => 'عدد الاعلانات: '.$adsTotalNumber,
+                ];
+
+            return response()->json($response);
+        //search result
+        }else{
+            $response = [
+                'favourites' => $data,
+                'div' => ($adsTotalNumber/6),
+                'free'=>'  نتائج البحث ',
+                'adsNum' => 'عدد الاعلانات: '.$adsTotalNumber,
+                'word'=>$request->word
+                ];
+               
+            return response()->json($response);       
+        }  
     }
-
 
 
 
     //get cats
     public function cats(Request $request)
     {
-        $data = DB::select("
-            SELECT * FROM categories
-        ");
-        return response()->json($data); // Ensure JSON response
+        $data=Category::where('cat_id','<',4)->get();//get the first 3 categories 
+        return response()->json($data); // send JSON response
     }
-
 
 
     //get subcats
     public function subcats(Request $request)
     {   
         if ($request->id > 0 ) {
-            $data = DB::select("
-                    SELECT * FROM sub
-                    JOIN categories ON sub.cat_id = categories.cat_id
-                    WHERE categories.cat_id = :cat
-                ", ['cat' => $request->id]);
-            return response()->json($data); // Ensure JSON response
+            $subCats=SubCategory::where('cat_id',$request->id)->get();
+            return response()->json($subCats); // send JSON response
+        }else{
+            return response()->json([]);
         }
     }
 
@@ -684,10 +688,44 @@ class apiController extends Controller
     //get countries
     public function conts(Request $request)
     {
-        $data = DB::select("
-            SELECT * FROM country
-        ");
-        return response()->json($data); // Ensure JSON response
+        $countries=Country::all();
+        return response()->json($countries); // send JSON response
+    }
+
+
+    //get states
+    public function states(Request $request)
+     {
+        if ($request->cont > 0 ) {
+            $states=State::where('country_id',$request->cont)->get();
+            return response()->json($states); // send JSON response
+        }
+        return response()->json([]); // if cont=0, send empty array
+     }
+
+
+     //get cities
+    public function cities(Request $request)
+    {
+        if ($request->state > 0 ) {
+            $cities=City::where('state_id',$request->state)->get();
+            return response()->json($cities); // send JSON response
+        }
+          return response()->json([]); // 
+    }
+
+    //get user name
+    public function getUserName(Request $request)
+    {
+       $name=User::where('id',$request->id)->first()->name;
+       if($name){
+          return response()->json([
+              'name'=>$name
+          ]);
+       }
+       return response()->json([
+        'name'=>'غير معروف'
+    ]);
     }
 
 

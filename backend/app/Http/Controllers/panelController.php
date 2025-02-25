@@ -12,6 +12,7 @@ use App\Models\Country;
 use App\Models\State;
 use App\Models\City;
 use App\Models\Plan;
+use App\Models\Comment;
 use App\Rules\countryPhone;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage; //put or delete files
@@ -104,7 +105,7 @@ class panelController extends Controller
     public function users(Request $request)
     {
         $page=$request->query('page',1);
-        $users=User::orderBy('id','DESC')->paginate(2,['*'],'page',$page);
+        $users=User::orderBy('id','DESC')->paginate(10,['*'],'page',$page);
         return response()->json($users);
     }
 
@@ -114,14 +115,16 @@ class panelController extends Controller
     public function block(Request $request)
     {  
         //check if user is found
-        $found=User::where('id',$request->id)->first();
-        $thisUser=User::where('id',$request->id);
-        //update block
-        if($found && $found->block==0){$thisUser->update(['block'=>1]); return response()->json(['message'=>'blocked', ]);}
-        else{$thisUser->update(['block'=>0]); return response()->json(['message'=>'Cancelled blocking', ]);}
-      
+        $found=User::where('id',$request->id);
+        //update block if user was found
+        if($found->first()){
+            if($found->first()->block==0){$found->update(['block'=>1]); return response()->json(['message'=>'User blocked', ]);
+            }else{$found->update(['block'=>0]); return response()->json(['message'=>'User blocking cancelled', ]);}    
+        }
+        return response()->json([
+            'message'=>'User NOT found'
+        ]);  
     }
-
 
 
     //change admin
@@ -142,7 +145,6 @@ class panelController extends Controller
     }
 
 
-
     public function destroy(string $id)
     {   
         $found=User::findOrFail($id);
@@ -151,9 +153,7 @@ class panelController extends Controller
             return response()->json(['message'=>'User deleted successfully',]);
         }
         return response()->json(['message'=>'User not found',]);
-
     }
-
 
 
      //get country,state,city,cat and subcat names
@@ -174,9 +174,7 @@ class panelController extends Controller
             'cat'=>$cat,
             'subCat'=>$subCat,
             'user'=>$user
-
         ]);
-
     }
 
 
@@ -191,10 +189,18 @@ class panelController extends Controller
     public function destroyPlan(string $id)
     {  
         //check plan
-        $found=Plan::where('plan_id',$id)->first();
+        $found=Plan::where('plan_id',$id);
         //delete plan
-       if($found){Plan::where('plan_id',$id)->delete();}
+       if($found->first()){$found->delete();}
        return response()->json([ 'message'=>'Plan deleted' ]);
+    }
+
+    //get comments
+    public function comments(Request $request)
+    {
+        $page=$request->query('page',1);
+        $comments=Comment::orderBy('c_id','DESC')->paginate(10,['*'],'page',$page);
+        return response()->json($comments);
     }
 
 

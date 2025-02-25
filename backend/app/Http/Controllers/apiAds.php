@@ -7,6 +7,7 @@ use App\Models\Ad;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\subCategory;
+use App\Models\Comment;
 use App\Models\Country;
 use App\Models\State;
 use App\Models\City;
@@ -50,7 +51,7 @@ class apiAds extends Controller
      // display ads by a certain user
     public function userAds(Request $request)
     {  
-        $adsPerPage=9;
+        $adsPerPage=6; 
         $pageNum=$request->Page ? $request->Page : 1;
         $startFrom = ($pageNum - 1) * $adsPerPage;// Starting point for pagination
         $USERID=User::where('email',$request->email)->value('id');
@@ -67,7 +68,7 @@ class apiAds extends Controller
          $adsTotalNumber = DB::table('ads')->where(['USER_ID'=>$USERID])->count();
           $response=[
               'ads'=>$ads,
-              'div' => ($adsTotalNumber/9),
+              'div' => ($adsTotalNumber/6),
               'adsNum' => 'عدد الاعلانات: '.$adsTotalNumber,
               'page'=>$pageNum
           ];
@@ -78,14 +79,14 @@ class apiAds extends Controller
     // display ads by a certain user
     public function userSearchAds(Request $request)
     {  
-        $adsPerPage=9;
+        $adsPerPage=6;
         $pageNum=$request->Page ? $request->Page : 1;
         // Starting point for pagination
         $startFrom = ($pageNum - 1) * $adsPerPage;
         // gwt user id
         $USERID=User::where('email',$request->email)->value('id');
         //decide search value
-        $search=$request->search==='waiting'?'waiting':'featured';
+        $search=$request->searchVal==='waiting'?'waiting':'featured';
         
         //search for waiting approval ads
         if($search==='waiting'){
@@ -93,9 +94,11 @@ class apiAds extends Controller
             Select * from ads where USER_ID= :userId
             AND approve=0
             ORDER BY feature DESC, item_id DESC  
-            LIMIT $startFrom, $adsPerPage
+            LIMIT :startFrom, :adsPerPage
             ",[
                 'userId'=>$USERID,
+                'startFrom' => $startFrom,
+                'adsPerPage' => $adsPerPage
             ]);
             // get the total number of ads 
             $adsTotalNumber = DB::table('ads')->where(['USER_ID'=>$USERID,'approve'=>0])->count();
@@ -106,21 +109,99 @@ class apiAds extends Controller
             Select * from ads where USER_ID= :userId
             AND feature > 0
             ORDER BY feature DESC, item_id DESC  
-            LIMIT  $startFrom, $adsPerPage
+            LIMIT :startFrom, :adsPerPage
             ",[
                 'userId'=>$USERID,
+                'startFrom' => $startFrom,
+                'adsPerPage' => $adsPerPage
             ]);
             // get the total number of ads 
             $adsTotalNumber = DB::table('ads')->where(['USER_ID'=>$USERID])->where('feature','>',0)->count();
         }
-
+       if(empty($ads)){
+            $response=[
+                'ads'=>$ads=[],
+                'div' => ($adsTotalNumber/6),
+                'adsNum' => 'عدد الاعلانات: '.$adsTotalNumber,
+                'page'=>$pageNum,
+                'msg'=>'لا توجد نتائج بحث'
+            ];
+            return json_encode($response);
+       }
         $response=[
             'ads'=>$ads,
-            'div' => ($adsTotalNumber/9),
+            'div' => ($adsTotalNumber/6),
             'adsNum' => 'عدد الاعلانات: '.$adsTotalNumber,
             'page'=>$pageNum
         ];
         return json_encode($response);
+    }
+
+
+    //check if ad has comments
+    public function checkComments(Request $request)
+    {   
+        //count comments
+        $num=Comment::where('ITEM_ID',$request->id)->count();
+        if($num>0){
+           return response()->json([
+               'num'=>$num
+           ]);
+        }
+        return response()->json([
+            'num'=>$num=0
+        ]);
+    }
+
+    //insert  a new comment
+    public function insertComment(Request $request)
+    {
+      //get commentor id
+      $commentor=User::where('email',$request->email)->first()->id;
+      $validator=Validator::make($request->all(),[
+        'comment'=>['string','min:1','max:700']
+      ]);
+       //if error, send error message
+      if($validator->fails()){
+         return response()->json(['error'=>'fail']);
+      }
+      $date=date('Y-m-d');
+       //insert a new comment in comments table
+      $adCom=new Comment();
+        $adCom->c_text=$request->comment;
+        $adCom->c_date=$date;
+        $adCom->ITEM_ID=$request->item;
+        $adCom->commentor=$commentor;
+        $adCom->rate=$request->rate;
+        $adCom->owner=$request->owner;
+      $adCom->save();
+
+      //update comments & rates for this ad
+      $numOfComments=Comment::where('ITEM_ID',$request->item)->count();//count comments
+      $sumOfRates=Comment::where('ITEM_ID',$request->item)->sum('rate');//get rates total
+      $rating=$sumOfRates/$numOfComments;//get ad 
+      //update ad rating
+      Ad::where('item_id',$request->item)->update(['comments'=>$numOfComments,'rating'=>$rating]);
+
+      return response()->json([
+          'ok'=>'ok'
+      ]);
+    }
+
+    
+    //get comments for a certain ad
+    public function getAddComments(Request $request)
+    {   
+       $comments=Comment::where('ITEM_ID',$request->id)->/*orderBy('c_id','DESC')->*/get();
+       if($comments){
+            return response()->json([
+                'comments'=>$comments
+            ]);
+       }else{
+            return response()->json([
+                'comments'=>$nocomments=[]
+            ]);
+       }
     }
 
 
@@ -130,13 +211,15 @@ class apiAds extends Controller
         //get category
       $cat=Category::where('cat_id',$request->cat)->first()->nameAR;
       //get subcategory
-      $sub=subCategory::where('subcat_id',$request->sub)->first()->subcat_nameAR;
+      $subcat=SubCategory::where('subcat_id',$request->sub)->first();
+      $sub=$subcat?$subcat->subcat_nameAR:'';
       //send data
       return response()->json([
           'cat'=>$cat,
           'sub'=>$sub
       ]);
     }
+
 
     //get cat and subcat 
     public function getCountryStateCity(Request $request)
@@ -154,6 +237,7 @@ class apiAds extends Controller
           'city'=>$city
       ]);
     }
+
 
     //get more
     public function moreAds(Request $request)
@@ -239,7 +323,6 @@ class apiAds extends Controller
                 'show'=>'no'
             ]);
         }
-        
     }
 
 
@@ -280,7 +363,7 @@ class apiAds extends Controller
     {  
        // $request->phone=trim($request->phone);
         $validated=$request->validate([
-            'titleValue' => ['required','string','min:5','max:40'],
+            'titleValue' => ['required','string','min:4','max:40'],
             'catValue' => 'required|integer|not_in:0',
             'subValue' => 'required|integer|not_in:0',
             'countryValue' => 'required|integer|not_in:0',
@@ -430,16 +513,11 @@ class apiAds extends Controller
             $ad->update(['approve'=>$approve]);
             
             return response()->json(['message' => 'تم التعديل بنجاح']);//      
-        
         }
-    }
-                     
+    }                   
 }
 
     
-
-   
-
     /**
      * Remove the specified resource from storage.
      */
@@ -451,7 +529,6 @@ class apiAds extends Controller
             return response()->json(['message'=>'Item deleted successfully',]);
         }
         return response()->json(['message'=>'Item not found',]);
-
     }
 
     

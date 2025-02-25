@@ -26,6 +26,7 @@ Route::group(['prefix'=>'panel'],function(){
    Route::post('/return-pending', [panelController::class,'returnPending']);
    //feature-ad
    Route::post('/feature-ad', [panelController::class,'featureAd']);
+   ////////////////users/////////////////
    //get users
    Route::get('/users', [panelController::class,'users']);
    //block users
@@ -38,9 +39,11 @@ Route::group(['prefix'=>'panel'],function(){
    Route::post('/names', [panelController::class,'names']);
    //get plan requests
    Route::get('/plans', [panelController::class,'plans']);
-   //get plan requests
+   //delete plan in plan table
    Route::post('delete-plan/{id}', [panelController::class,'destroyPlan']);
-
+   ///////comments///////////////
+   //get comments
+   Route::get('/comments', [panelController::class,'comments']);
 
 });
 
@@ -48,20 +51,25 @@ Route::group(['prefix'=>'panel'],function(){
 //show and search 
 Route::group([],function () {
    //get featured ads
-    Route::get('home/{key}',[apiController::class,'paidAds']); 
+    Route::get('/home',[apiController::class,'featuredAds']); 
     //add latest ads
     Route::get('/latest',[apiController::class,'latest']); 
     //search in homepage
     Route::post('search',[apiController::class,'search']); 
-     //search in profile
-    Route::post('searchWord',[apiController::class,'searchWord']); 
+    //search ads in profile
+    Route::post('searchWordAds',[apiController::class,'searchWordAds']); 
+    //search favourites in profile
+    Route::post('searchWordFavourites',[apiController::class,'searchWordFavourites']); 
+    
     //get countries, states and cities
-    Route::get('conts',[apiController::class,'conts']);  
+    Route::post('conts',[apiController::class,'conts']);  
     Route::post('states',[apiController::class,'states']); 
     Route::post('cities',[apiController::class,'cities']); 
     //categories & subcategories
-    Route::get('cats',[apiController::class,'cats']); 
+    Route::post('cats',[apiController::class,'cats']); 
     Route::post('subcats',[apiController::class,'subcats']);  
+    //get user name
+    Route::post('get-user-name/{id}',[apiController::class,'getUserName']); 
     //login
     Route::post('login',[apiController::class,'login']); //
     //sign up
@@ -93,15 +101,15 @@ Route::group([],function () {
 
  //ads
  Route::group(['prefix'=>'ads'],function(){
-    //get certain user ads
+    //get certain user's ads to show them in their profile
     Route::post('/user',[apiAds::class,'userAds']);
     Route::post('store',[apiAds::class,'store']); 
     Route::get('/cat/{cat}',[apiAds::class,'getCat']);
     Route::get('/sub/{sub}',[apiAds::class,'getSub']);
     //update ads
-    Route::post('update/{id}',[apiAds::class,'update']); //update certain user ads
+    Route::post('update/{id}',[apiAds::class,'update']); //update certain ads
     //delete ads
-    Route::post('delete/{id}',[apiAds::class,'destroy']); //delete certain user ads
+    Route::post('delete/{id}',[apiAds::class,'destroy']); //delete certain ads
     //search certain user ads
     Route::post('/user-search',[apiAds::class,'userSearchAds']);
     //get category and subcategory for ads
@@ -110,6 +118,15 @@ Route::group([],function () {
     Route::post('/get-country-state-city',[apiAds::class,'getCountryStateCity']);
     //get more ads when clicking on category, subcategory...etc
     Route::post('/more',[apiAds::class,'moreAds']);
+    //check if ad has comments
+    Route::post('/check-comments/{id}',[apiAds::class,'checkComments']);
+    //insert a new comment
+    Route::post('/insert-comment',[apiAds::class,'insertComment']);
+    //bring ad comments
+    Route::post('/comments/{id}',[apiAds::class,'getAddComments']);
+    //update comments & rates
+    Route::post('/update-comments-rates',[apiAds::class,'updateCommentsRates']);
+    
     
     
  });
@@ -130,3 +147,7 @@ Route::get('do',function(){
  
 
 });
+
+
+
+ 
