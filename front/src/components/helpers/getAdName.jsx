@@ -1,12 +1,12 @@
 import React,{useState,useEffect} from 'react'
 import { http } from '../axios/axiosGlobal'
 
-const GetUserName = ({id}) => {
+const GetAdName = ({id}) => {
     //state
     const [name, setName] = useState('')
     const getTheName=async(id)=>{
         //send api
-        const res= await http.post(`/panel/get-user-name/${id}`)
+        const res= await http.post(`/panel/get-ad-name/${id}`) 
         setName(res.data.name)
     }
 
@@ -21,4 +21,4 @@ const GetUserName = ({id}) => {
     )
 }
 
-export default GetUserName
+export default GetAdName

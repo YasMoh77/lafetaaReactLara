@@ -8,8 +8,8 @@ import   '../admin.css'
 const Users = ({hideFunc}) => {
     //receive hideFunc as a prop, load it with hide whose value is 1
     //to go back to dashboard and hide its contents
-    const hide=1;
-    hideFunc(hide)
+    //const hide=1;
+    hideFunc(1)
 
      //get login data
      const loginData=JSON.parse(localStorage.getItem('loginData'));

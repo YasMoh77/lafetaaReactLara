@@ -46,7 +46,10 @@
     padding: 1vh 1vw;
 }
 
-/** dashboard */
+/** edit comment */
+@media (max-width: 767px) {
+    i{font-size: 7vw;}
+  }
 /*@media (min-width: 768px) {
     .child-one-dash{width: 17.5%;}
     .child-two-dash{width:80%}

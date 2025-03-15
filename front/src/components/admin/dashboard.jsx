@@ -1,5 +1,5 @@
 import { useState,useEffect } from 'react'
-import { Link, Route, Routes } from 'react-router-dom'
+import { Link, Route, Routes,useLocation } from 'react-router-dom'
 //import hooks
 import Ads from './routes/Ads'
 import Users from './routes/users'
@@ -11,11 +11,13 @@ import { http } from '../axios/axiosGlobal'
 
 
 
-function Dashboard() {
+const  Dashboard=()=> {
     const [hide, setHide] = useState(0)
     const [adsNum, setAdsNum] = useState(null)
     const [usersNum, setUsersNum] = useState(null)
     const [plansNum, setPlansNum] = useState(null)
+    const location=useLocation()
+
     //send api call to count ads and users
     const count=async()=>{
         const res=await http.post('panel/count-dashboard');
@@ -29,10 +31,22 @@ function Dashboard() {
     const hideFunc=(hide)=>{
         setHide(hide)
     }
+    const showDashGraphs=(val)=>{
+        if (val===0&&location.pathname==='/dashboard') {
+            setHide(0)
+        }else{
+            setHide(1)
+        }
+    }
 
     useEffect(() => {
         count()
     }, [])
+
+    useEffect(() => {
+        showDashGraphs(0)
+    }, [location.pathname])
+    
 
 
     return (
@@ -42,12 +56,12 @@ function Dashboard() {
                 <div className='row col-md-12 justify-content-between mb-5 px-0 mx-auto'>
                     <div className='left-dash col-2 bg-dark me-1'>
                         <ul className='list-unstyled py-4'>
-                            <li className='pb-2'><Link onClick={()=>{setHide(0)}} to='/dashboard'>Dashboard</Link></li>
-                            <li className='pb-2'><Link onClick={()=>{setHide(1)}} to='ads'>Ads</Link></li>
-                            <li className='pb-2'><Link onClick={()=>{setHide(1)}} to='users'>Users</Link></li>
-                            <li className='pb-2'><Link onClick={()=>{setHide(1)}} to='requests'>Plan requests</Link></li>
-                            <li className='pb-2'><Link onClick={()=>{setHide(1)}} to='comments'>Comments</Link></li>
-                            <li className='pb-2'><Link onClick={()=>{setHide(1)}} to='notes'>Notes</Link></li>
+                            <li className='pb-2'><Link onClick={()=>{showDashGraphs(0)}} to='/dashboard'>Dashboard</Link></li>
+                            <li className='pb-2'><Link onClick={()=>{showDashGraphs(1)}} to='ads'>Ads</Link></li>
+                            <li className='pb-2'><Link onClick={()=>{showDashGraphs(1)}} to='users'>Users</Link></li>
+                            <li className='pb-2'><Link onClick={()=>{showDashGraphs(1)}} to='requests'>Plan requests</Link></li>
+                            <li className='pb-2'><Link onClick={()=>{showDashGraphs(1)}} to='comments'>Comments</Link></li>
+                            <li className='pb-2'><Link onClick={()=>{showDashGraphs(1)}} to='notes'>Notes</Link></li>
                         </ul>
                     </div>
 

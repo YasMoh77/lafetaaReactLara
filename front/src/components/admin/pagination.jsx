@@ -10,7 +10,7 @@ const Pagination = ({currentPage,lastPage,changePageFunc}) => {
     return (
         <div className='pagination'>          
             {pages.map((page)=>(
-                <button key={page} onClick={()=>{changePageFunc(page)}}> {page==currentPage? <span className='red fw-bold fs-5'>{page}</span> : <span className='white'>{page}</span>}  </button>              
+                <button key={page} onClick={()=>{changePageFunc(page)}}> {page==currentPage? <span className='red fw-bold'>{page}</span> : <span className='white'>{page}</span>}  </button>              
             ))}             
         </div>
         
