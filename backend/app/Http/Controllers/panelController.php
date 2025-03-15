@@ -100,7 +100,6 @@ class panelController extends Controller
     }
 
 
-
     //get users
     public function users(Request $request)
     {
@@ -108,7 +107,6 @@ class panelController extends Controller
         $users=User::orderBy('id','DESC')->paginate(10,['*'],'page',$page);
         return response()->json($users);
     }
-
 
 
     //block and unblock users
@@ -159,7 +157,6 @@ class panelController extends Controller
      //get country,state,city,cat and subcat names
     public function names(Request $request)
     {  
-        
         $country=Country::whereIn('country_id',$request->country)->pluck('country_nameAR','country_id');
         $state=State::whereIn('state_id',$request->state)->pluck('state_nameAR','state_id');
         $city=City::whereIn('city_id',$request->city)->pluck('city_nameAR','city_id');
@@ -185,7 +182,7 @@ class panelController extends Controller
       return response()->json($plans);
     }
 
-
+    //delete plan
     public function destroyPlan(string $id)
     {  
         //check plan
@@ -201,6 +198,72 @@ class panelController extends Controller
         $page=$request->query('page',1);
         $comments=Comment::orderBy('c_id','DESC')->paginate(10,['*'],'page',$page);
         return response()->json($comments);
+    }
+   
+    //delete comment
+    public function destroyComment(string $id)
+    {  
+        //check plan
+        $found=Comment::where('c_id',$id);
+        //delete plan
+        if(!$found->first()){
+            return response()->json([ 'message'=>'NOT FOUND' ]);
+        }
+        //get ad id
+        $item_id=$found->first()->ITEM_ID;
+        //delete this comment
+         $found->delete();  
+         //count comments for this ad
+         $num=$found->count();
+         //update number of comments in ads table
+         Ad::where('item_id',$item_id)->update(['comments'=>$num]);
+       return response()->json([ 'message'=>'Comment deleted' ]);
+    }
+
+    //get user name
+    public function getUserName(Request $request)
+    {
+       $name=User::where('id',$request->id)->first()->name;
+       if($name){
+          return response()->json([
+              'name'=>$name
+          ]);
+       }
+       return response()->json([
+        'name'=>'غير معروف'
+    ]);
+    }
+
+    //get ad name
+    public function getAdName(Request $request)
+    {
+       $name=Ad::where('item_id',$request->id)->first()->NAME;
+       if($name){
+          return response()->json([ 
+              'name'=>$name
+          ]);
+       }
+       return response()->json([
+        'name'=>'غير معروف'
+    ]);
+    }
+
+    //editComment
+    public function editComment(Request $request)
+    {
+        $validator = Validator::make($request->all(),[
+            'text'     => 'required|string|min:2|max:700',
+        ]);
+        //if wrong data
+        if ($validator->fails()) {
+            return response()->json(['message' =>'انتبه للأخطاء']);
+        }
+        $found=Comment::where('c_id',$request->id)->exists();
+        if(!$found){
+            return response()->json(['message' =>'هذا التعليق غير موجود']);
+        }
+         Comment::where('c_id',$request->id)->update(['c_text'=>$request->text]);
+        return response()->json(['message' =>'تم التعديل']);
     }
 
 

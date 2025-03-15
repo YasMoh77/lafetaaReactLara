@@ -1,0 +1,23 @@
+# Ignore Git-related files
+.git/
+.gitignore
+
+# Ignore environment files (if already copied or set up separately)
+.env
+
+# Ignore development-specific files
+docker-compose.yml
+docker-compose.override.yml
+
+# Ignore frontend build files (if not needed in the container)
+node_modules/
+public/css/
+public/js/
+public/hot
+
+# Ignore IDE-specific files
+.idea/
+.vscode/
+
+# Ignore log files
+storage/logs/

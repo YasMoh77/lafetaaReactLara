@@ -26,6 +26,8 @@ Route::group(['prefix'=>'panel'],function(){
    Route::post('/return-pending', [panelController::class,'returnPending']);
    //feature-ad
    Route::post('/feature-ad', [panelController::class,'featureAd']);
+   //get ad name
+   Route::post('get-ad-name/{id}',[panelController::class,'getAdName']); 
    ////////////////users/////////////////
    //get users
    Route::get('/users', [panelController::class,'users']);
@@ -35,15 +37,24 @@ Route::group(['prefix'=>'panel'],function(){
    Route::post('/change-admin', [panelController::class,'changeAdmin']);
    //delete user
    Route::post('delete/{id}',[panelController::class,'destroy']); //delete certain user 
+   //get user name
+   Route::post('get-user-name/{id}',[panelController::class,'getUserName']); 
+   //////////// country,state ...etc  ///////////////
    //get country,state,city,cat and subcat names
    Route::post('/names', [panelController::class,'names']);
    //get plan requests
    Route::get('/plans', [panelController::class,'plans']);
    //delete plan in plan table
-   Route::post('delete-plan/{id}', [panelController::class,'destroyPlan']);
+   Route::post('delete-plan/{id}', [panelController::class,'destroyPlan']); 
    ///////comments///////////////
    //get comments
    Route::get('/comments', [panelController::class,'comments']);
+   //edit comment
+   Route::post('/comment', [panelController::class,'editComment']);
+   //delete comment
+   Route::post('delete-comment/{id}', [panelController::class,'destroyComment']); 
+   
+
 
 });
 
@@ -68,8 +79,6 @@ Route::group([],function () {
     //categories & subcategories
     Route::post('cats',[apiController::class,'cats']); 
     Route::post('subcats',[apiController::class,'subcats']);  
-    //get user name
-    Route::post('get-user-name/{id}',[apiController::class,'getUserName']); 
     //login
     Route::post('login',[apiController::class,'login']); //
     //sign up
@@ -110,8 +119,10 @@ Route::group([],function () {
     Route::post('update/{id}',[apiAds::class,'update']); //update certain ads
     //delete ads
     Route::post('delete/{id}',[apiAds::class,'destroy']); //delete certain ads
-    //search certain user ads
+    //search certain user ads (in user profile)
     Route::post('/user-search',[apiAds::class,'userSearchAds']);
+    //check if owner of the ad is the commentor
+    Route::post('/check-ad-owner/{email}/{id}',[apiAds::class,'checkAdOwner']);
     //get category and subcategory for ads
     Route::post('/get-cat-subcat',[apiAds::class,'getCatSubcat']);
     //get country, state and city for ads
@@ -126,6 +137,8 @@ Route::group([],function () {
     Route::post('/comments/{id}',[apiAds::class,'getAddComments']);
     //update comments & rates
     Route::post('/update-comments-rates',[apiAds::class,'updateCommentsRates']);
+    //submit reply
+    Route::post('/submit-reply',[apiAds::class,'submitReply']);
     
     
     

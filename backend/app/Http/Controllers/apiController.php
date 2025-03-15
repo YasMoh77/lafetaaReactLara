@@ -124,7 +124,6 @@ class apiController extends Controller
      $validator = Validator::make($request->all(),[
         'email'     => 'required|string',
         'password'  => 'required|string'
-
       ]);
         //if wrong data
         if ($validator->fails()) {
@@ -714,22 +713,9 @@ class apiController extends Controller
           return response()->json([]); // 
     }
 
-    //get user name
-    public function getUserName(Request $request)
-    {
-       $name=User::where('id',$request->id)->first()->name;
-       if($name){
-          return response()->json([
-              'name'=>$name
-          ]);
-       }
-       return response()->json([
-        'name'=>'غير معروف'
-    ]);
-    }
 
 
-    //add
+    
 
 
 

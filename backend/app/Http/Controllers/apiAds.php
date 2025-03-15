@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Category;
 use App\Models\subCategory;
 use App\Models\Comment;
+use App\Models\ReplyComment;
 use App\Models\Country;
 use App\Models\State;
 use App\Models\City;
@@ -16,6 +17,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage; //put or delete files
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
+
 
 
 
@@ -76,7 +79,7 @@ class apiAds extends Controller
     }
 
 
-    // display ads by a certain user
+    // display ads for a certain user (in user profile)
     public function userSearchAds(Request $request)
     {  
         $adsPerPage=6;
@@ -137,6 +140,20 @@ class apiAds extends Controller
         return json_encode($response);
     }
 
+    //checkAdOwner
+    public function checkAdOwner($email,$id)
+    {  
+        //get commentor id
+        $commentor=User::where('email',$email)->first();
+        //get ad owner id
+        $owner=Ad::where('item_id',$id)->first()->USER_ID;
+        if($commentor->id===$owner&&$commentor->admin===''){
+           return response()->json([
+               'found'=>'owner'
+           ]);
+        }
+    }
+
 
     //check if ad has comments
     public function checkComments(Request $request)
@@ -155,9 +172,20 @@ class apiAds extends Controller
 
     //insert  a new comment
     public function insertComment(Request $request)
-    {
+    {  
+       //check if commentor isn't deleted
+       $found=User::where('email',$request->email)->first();
+       if(!$found){
+          return response()->json(['error'=>'fail']);
+       }
+       //get ad owner
+       $adOwner=Ad::where('item_id',$request->item)->first()->USER_ID;
+       //prevent if owner of the ad===commentor and not an admin
+       if($adOwner===$found->id&&$found->admin==''){
+          return response()->json(['error'=>'fail']);
+       }
       //get commentor id
-      $commentor=User::where('email',$request->email)->first()->id;
+      $commentor=$found->id;
       $validator=Validator::make($request->all(),[
         'comment'=>['string','min:1','max:700']
       ]);
@@ -179,10 +207,10 @@ class apiAds extends Controller
       //update comments & rates for this ad
       $numOfComments=Comment::where('ITEM_ID',$request->item)->count();//count comments
       $sumOfRates=Comment::where('ITEM_ID',$request->item)->sum('rate');//get rates total
-      $rating=$sumOfRates/$numOfComments;//get ad 
-      //update ad rating
+      $rating=$sumOfRates/$numOfComments;//divide to get rating
+      //update number of comments and rating for this ad
       Ad::where('item_id',$request->item)->update(['comments'=>$numOfComments,'rating'=>$rating]);
-
+      //return response
       return response()->json([
           'ok'=>'ok'
       ]);
@@ -192,15 +220,55 @@ class apiAds extends Controller
     //get comments for a certain ad
     public function getAddComments(Request $request)
     {   
-       $comments=Comment::where('ITEM_ID',$request->id)->/*orderBy('c_id','DESC')->*/get();
+       $item=Comment::where('ITEM_ID',$request->id)->orderBy('c_id','DESC');
+       $comments=$item->get();
+       $count=$item->count();
+       //
+       $cids=$comments->pluck('c_id');
+       $repliesToTheseComments=ReplyComment::whereIn('c_id',$cids)->get();
+
        if($comments){
             return response()->json([
-                'comments'=>$comments
+                'comments'=>$comments,
+                'replies'=>$repliesToTheseComments,
+                'count'=>$count
             ]);
        }else{
             return response()->json([
                 'comments'=>$nocomments=[]
             ]);
+       }
+    }
+
+    //submit Reply to comment
+    public function submitReply(Request $request)
+    {  
+        $validator=Validator::make($request->all(),[
+             'reply_text'=>'required|string|min:1'
+        ]);
+        //date
+        $now=Carbon::now();
+        $user=User::where('email',$request->email)->first()->id;
+        //insert data in comment2 table
+       if (!$validator->fails()) {
+          $reply=new ReplyComment();
+            $reply->text=$request->reply_text;
+            $reply->date=$now;
+            $reply->commentor=$user;
+            $reply->item_id=$request->item;
+            $reply->c_id=$request->c_id;
+          $reply->save();
+          //gather replies to this old comment to count & get them
+          $prepare=ReplyComment::where('c_id',$request->c_id);
+          $count=$prepare->count();
+          $replies=$prepare->get();
+          if($count>0){
+              return response()->json([
+                  'replies'=>$replies,
+                  'count'=>$count
+              ]);
+          }
+
        }
     }
 
